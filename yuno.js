@@ -853,54 +853,7 @@
     JAVASCRIPT ADDITIONS FOR MOBILE BODY SCROLL PREVENTION
     Add this to your existing JavaScript in yuno.js:
     */
-    
-    // ADD TO EXISTING JAVASCRIPT FUNCTIONS:
-    
-    // Mobile body scroll prevention
-    function preventMobileBodyScroll(prevent = true) {
-    const isMobile = window.innerWidth <= 768;
-    if (isMobile) {
-    if (prevent) {
-    document.body.classList.add(‘yuno-mobile-chat-open’);
-    // Store current scroll position
-    const scrollY = window.scrollY;
-    document.body.style.top = `-${scrollY}px`;
-    } else {
-    document.body.classList.remove(‘yuno-mobile-chat-open’);
-    // Restore scroll position
-    const scrollY = document.body.style.top;
-    document.body.style.top = ‘’;
-    window.scrollTo(0, parseInt(scrollY || ‘0’) * -1);
-    }
-    }
-    }
-    
-    // MODIFY EXISTING SHOW/HIDE FUNCTIONS:
-    
-    // In your existing showChatbox function, add:
-    function showChatbox() {
-    // … existing code …
-    preventMobileBodyScroll(true); // Add this line
-    // … rest of existing code …
-    }
-    
-    // In your existing hideChatbox function, add:
-    function hideChatbox() {
-    // … existing code …
-    preventMobileBodyScroll(false); // Add this line
-    // … rest of existing code …
-    }
-    
-    // PREVENT AUTO-FOCUS ON MOBILE (as requested)
-    // Modify your input focus behavior:
-    
-        // In your existing input event handlers, add mobile check:
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        
-        // Only auto-focus input on desktop
-        if (!isMobile) {
-        this._input.focus();
-        }
+
 
 
 
