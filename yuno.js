@@ -1,4 +1,4 @@
-// yuno-secure.js - Enhanced security version with mobile optimizations
+// yuno-secure.js - Enhanced security version
 'use strict';
 
 (() => {
@@ -18,13 +18,6 @@
     hasAttributes: thisScript ? Array.from(thisScript.attributes).map(a => a.name) : []
   });
   
-  // Mobile detection utility
-  const isMobile = () => {
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-    const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
-    return mobileRegex.test(userAgent) || window.innerWidth < 768;
-  };
-
   // Configuration from script attributes with fallbacks
   const CONFIG = {
     // Core settings
@@ -54,9 +47,9 @@
     autoShowDelay: parseInt(thisScript?.getAttribute('auto_show_delay') || '1000', 10),
     showTeaser: thisScript?.getAttribute('show_teaser') !== 'false',
     
-    // Dimensions - Enhanced for desktop, mobile-optimized
-    width: thisScript?.getAttribute('width') || (isMobile() ? '320px' : '380px'),
-    height: thisScript?.getAttribute('height') || (isMobile() ? '420px' : '520px'),
+    // Dimensions
+    width: thisScript?.getAttribute('width') || '340px',
+    height: thisScript?.getAttribute('height') || '450px',
     
     // Advanced
     borderRadius: thisScript?.getAttribute('border_radius') || '16px',
@@ -151,35 +144,6 @@
       .teaser, .bubble {
         border-radius: ${CONFIG.borderRadius};
         ${!CONFIG.blurEffect ? 'backdrop-filter: none;' : ''}
-      }
-
-      /* Mobile-specific styles */
-      @media (max-width: 768px) {
-        :host {
-          ${vertical}: 20px;
-          ${horizontal}: 20px;
-        }
-        
-        .chatbox {
-          width: min(${CONFIG.width}, calc(100vw - 40px));
-          max-height: min(${CONFIG.height}, calc(100vh - 80px));
-        }
-        
-        /* Prevent mobile zoom on input focus */
-        .input-row input {
-          font-size: 16px !important;
-        }
-        
-        /* Better touch targets */
-        .bubble {
-          min-height: 48px;
-          padding: 0 20px;
-        }
-        
-        .close-btn, .teaser .close {
-          min-width: 44px;
-          min-height: 44px;
-        }
       }
     `;
   }
@@ -290,7 +254,7 @@
         z-index: 10000;
       }
 
-      /* Trigger pill - Enhanced micro-animations */
+      /* Trigger pill */
       .bubble {
         display: inline-flex;
         align-items: center;
@@ -304,36 +268,20 @@
         font-size: 14px;
         font-weight: 600;
         gap: 10px;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.3s ease;
         border: 2px solid rgba(255, 255, 255, 0.1);
-        transform: translateY(0);
-        animation: bubbleFloat 3s ease-in-out infinite;
       }
-      
-      @keyframes bubbleFloat {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-2px); }
-      }
-      
       .bubble:hover {
-        transform: translateY(-4px) scale(1.02);
-        box-shadow: 0 12px 30px rgba(255, 107, 53, 0.5);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
         background: var(--accent-hover);
-        animation: none;
       }
-      
       .bubble .icon { 
         font-size: 20px; 
         filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
-        animation: iconPulse 2s ease-in-out infinite;
-      }
-      
-      @keyframes iconPulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.1); }
       }
 
-      /* Teaser input row - Enhanced animations */
+      /* Teaser input row */
       .teaser {
         display: none;
         align-items: center;
@@ -343,38 +291,27 @@
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         padding: 4px;
         gap: 8px;
-        animation: slideIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        transform: translateY(0);
+        animation: slideIn 0.5s ease-out;
       }
       
-      /* Enhanced Animation styles */
+      /* Animation styles */
       @keyframes slideIn {
-        from { 
-          transform: translateY(30px); 
-          opacity: 0;
-          scale: 0.95;
-        }
-        to { 
-          transform: translateY(0); 
-          opacity: 1;
-          scale: 1;
-        }
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
       }
-      
       @keyframes fadeIn {
-        from { opacity: 0; transform: scale(0.98); }
-        to { opacity: 1; transform: scale(1); }
+        from { opacity: 0; }
+        to { opacity: 1; }
       }
-      
       @keyframes scaleIn {
-        from { transform: scale(0.85); opacity: 0; }
+        from { transform: scale(0.8); opacity: 0; }
         to { transform: scale(1); opacity: 1; }
       }
       
-      .teaser.fade { animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
-      .teaser.scale { animation: scaleIn 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
-      .chatbox.fade { animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
-      .chatbox.scale { animation: scaleIn 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+      .teaser.fade { animation: fadeIn 0.5s ease-out; }
+      .teaser.scale { animation: scaleIn 0.5s ease-out; }
+      .chatbox.fade { animation: fadeIn 0.5s ease-out; }
+      .chatbox.scale { animation: scaleIn 0.5s ease-out; }
 
       .teaser .close {
         width: 32px;
@@ -387,12 +324,11 @@
         justify-content: center;
         cursor: pointer;
         font-size: 16px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: background 0.2s ease, color 0.2s ease;
       }
       .teaser .close:hover {
         background: var(--close-hover-bg);
         color: var(--close-hover-color);
-        transform: rotate(90deg);
       }
       .teaser .input {
         flex: 1;
@@ -410,15 +346,13 @@
         padding: 8px 14px;
         cursor: pointer;
         font-size: 14px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: background 0.2s ease;
       }
       .teaser .ask-btn:hover {
         background: var(--accent-hover);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
       }
 
-      /* Chat panel - Enhanced for larger desktop size */
+      /* Chat panel */
       .chatbox {
         display: none;
         flex-direction: column;
@@ -426,46 +360,34 @@
         backdrop-filter: var(--blur);
         box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 0 1px var(--border-color);
         overflow: hidden;
-        animation: slideIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        transition: all 0.3s ease;
+        animation: slideIn 0.5s ease-out;
       }
-      
       .header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 16px;
+        padding: 12px;
         font-size: 16px;
         font-weight: bold;
         color: var(--text-color);
         background: var(--header-bg);
         backdrop-filter: var(--blur);
-        border-bottom: 1px solid var(--border-color);
       }
-      
       .close-btn {
         background: none;
         border: none;
         font-size: 18px;
         cursor: pointer;
         color: var(--close-color);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        transition: color 0.2s ease;
       }
       .close-btn:hover {
         color: var(--close-hover-color);
-        background: var(--close-hover-bg);
-        transform: rotate(90deg);
       }
 
       /* Powered by Yuno message */
       .powered-by {
-        padding: 8px 16px;
+        padding: 6px 12px;
         text-align: center;
         font-size: 11px;
         color: var(--text-muted);
@@ -476,56 +398,38 @@
         color: var(--accent-solid);
         text-decoration: none;
         font-weight: 500;
-        transition: all 0.2s ease;
       }
       .powered-by a:hover {
         text-decoration: underline;
-        filter: brightness(1.2);
       }
 
       .messages {
         flex: 1;
         overflow-y: auto;
-        padding: 16px;
+        padding: 12px;
         display: flex;
         flex-direction: column;
-        gap: 16px;
-        scrollbar-width: thin;
-        scrollbar-color: var(--border-color) transparent;
-        scroll-behavior: smooth;
+        gap: 12px;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
       }
       .messages::-webkit-scrollbar {
-        width: 6px;
+        display: none;
       }
-      .messages::-webkit-scrollbar-track {
-        background: transparent;
-      }
-      .messages::-webkit-scrollbar-thumb {
-        background-color: var(--border-color);
-        border-radius: 3px;
-      }
-      
       .input-row {
         display: flex;
         border-top: 1px solid var(--border-color);
         background: var(--header-bg);
         backdrop-filter: var(--blur);
-        padding: 4px;
-        gap: 4px;
       }
       .input-row input {
         flex: 1;
         border: none;
-        padding: 12px 16px;
+        padding: 10px;
         font-size: 14px;
         outline: none;
         background: transparent;
         color: var(--text-color);
-        border-radius: 12px;
-        transition: all 0.2s ease;
-      }
-      .input-row input:focus {
-        background: var(--yuno-bg);
       }
       .input-row input::placeholder {
         color: var(--text-muted);
@@ -534,53 +438,34 @@
         background: var(--accent);
         color: #fff;
         border: none;
-        padding: 0 20px;
+        padding: 0 16px;
         cursor: pointer;
         font-size: 14px;
-        border-radius: 12px;
-        font-weight: 600;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        min-width: 60px;
+        transition: background 0.2s ease;
       }
-      .input-row button:hover:not(:disabled) {
+      .input-row button:hover {
         background: var(--accent-hover);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
       }
       .input-row button:disabled {
         opacity: 0.6;
         cursor: not-allowed;
-        transform: none;
       }
 
-      /* Bot & User bubbles - Enhanced styling */
+      /* Bot & User bubbles */
       .chatbot-bubble {
         position: relative;
-        padding: 14px 18px;
+        padding: 12px 16px;
         border-radius: 18px;
-        max-width: 85%;
-        line-height: 1.6;
+        max-width: 80%;
+        line-height: 1.5;
         font-size: 14px;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         font-weight: 400;
         word-wrap: break-word !important;
         overflow-wrap: break-word !important;
         hyphens: auto !important;
         white-space: pre-wrap !important;
-        animation: messageSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       }
-      
-      @keyframes messageSlideIn {
-        from { 
-          opacity: 0; 
-          transform: translateY(10px) scale(0.98); 
-        }
-        to { 
-          opacity: 1; 
-          transform: translateY(0) scale(1); 
-        }
-      }
-      
       .msg.bot .chatbot-bubble {
         background: var(--yuno-bg);
         color: var(--text-color);
@@ -626,7 +511,7 @@
       
       .msg.user .chatbot-bubble {
         display: inline-block !important;
-        max-width: 85%;
+        max-width: 80%;
         text-align: left !important;
         margin-right: 0 !important;
         margin-left: auto !important;
@@ -635,7 +520,7 @@
         hyphens: auto !important;
       }
 
-      /* Enhanced Typing indicator */
+      /* Typing indicator */
       .typing {
         display: inline-flex;
         gap: 4px;
@@ -648,54 +533,33 @@
         animation: pulse 1.5s infinite ease-in-out;
       }
       .typing .dot {
-        width: 8px;
-        height: 8px;
+        width: 6px;
+        height: 6px;
         background: var(--accent-solid);
         border-radius: 50%;
-        animation: bounce 1.2s infinite ease-in-out;
+        animation: bounce 0.8s infinite ease-in-out;
       }
-      .typing .dot:nth-child(2) { animation-delay: 0.2s; }
-      .typing .dot:nth-child(3) { animation-delay: 0.4s; }
-      .typing .dot:nth-child(4) { animation-delay: 0.6s; }
+      .typing .dot:nth-child(2) { animation-delay: 0.1s; }
+      .typing .dot:nth-child(3) { animation-delay: 0.2s; }
+      .typing .dot:nth-child(4) { animation-delay: 0.3s; }
 
       @keyframes bounce {
         0%, 80%, 100% { 
-          transform: scale(0.8) translateY(0);
+          transform: scale(0.8);
           opacity: 0.5;
         }
         40% { 
-          transform: scale(1.2) translateY(-4px);
+          transform: scale(1.2);
           opacity: 1;
         }
       }
       @keyframes pulse {
-        0%, 100% { opacity: 0.6; transform: scale(1); }
-        50% { opacity: 1; transform: scale(1.05); }
+        0%, 100% { opacity: 0.7; }
+        50% { opacity: 1; }
       }
 
       /* Hide elements based on config */
       .teaser.hide { display: none !important; }
-      
-      /* Mobile-specific enhancements */
-      @media (max-width: 768px) {
-        .chatbot-bubble {
-          max-width: 90%;
-          padding: 12px 16px;
-        }
-        
-        .messages {
-          padding: 12px;
-          gap: 12px;
-        }
-        
-        .header {
-          padding: 12px;
-        }
-        
-        .powered-by {
-          padding: 6px 12px;
-        }
-      }
     </style>
 
     <div class="auth-error">Authentication failed. Please refresh the page.</div>
@@ -751,18 +615,12 @@
       this._retryCount = 0;
       this._maxRetries = 2;
       this._authenticated = false;
-      this._isMobile = isMobile();
     }
 
     async connectedCallback() {
       // Apply initial theme
       if (!this.hasAttribute('theme')) {
         this.setAttribute('theme', CONFIG.theme);
-      }
-
-      // Add viewport meta tag to prevent zoom on mobile
-      if (this._isMobile) {
-        this._addViewportMeta();
       }
 
       // Authenticate widget before showing
@@ -773,25 +631,6 @@
       } catch (error) {
         console.error('Yuno: Failed to authenticate widget', error);
         this._showAuthError();
-      }
-    }
-
-    _addViewportMeta() {
-      // Check if viewport meta tag exists
-      let viewportMeta = document.querySelector('meta[name="viewport"]');
-      
-      if (!viewportMeta) {
-        // Create viewport meta tag if it doesn't exist
-        viewportMeta = document.createElement('meta');
-        viewportMeta.name = 'viewport';
-        viewportMeta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
-        document.head.appendChild(viewportMeta);
-      } else {
-        // Modify existing viewport to prevent zoom
-        const currentContent = viewportMeta.content;
-        if (!currentContent.includes('user-scalable=no')) {
-          viewportMeta.content = currentContent + ', user-scalable=no, maximum-scale=1.0';
-        }
       }
     }
 
@@ -851,48 +690,6 @@
       this._closeBox.addEventListener('click', () => this._toggleChat(false));
       this._sendBtn.addEventListener('click', () => this._send());
       this._input.addEventListener('keydown', e => e.key === 'Enter' && this._send());
-
-      // Mobile-specific event listeners
-      if (this._isMobile) {
-        // Prevent zoom on input focus by handling touch events
-        this._input.addEventListener('touchstart', (e) => {
-          // Don't prevent the event, just ensure the input gets focus without zoom
-          setTimeout(() => {
-            this._input.style.fontSize = '16px';
-          }, 0);
-        });
-
-        // Handle mobile keyboard visibility
-        this._setupMobileKeyboardHandling();
-      }
-    }
-
-    _setupMobileKeyboardHandling() {
-      let initialViewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-      
-      const handleViewportChange = () => {
-        if (window.visualViewport) {
-          const currentHeight = window.visualViewport.height;
-          const heightDifference = initialViewportHeight - currentHeight;
-          
-          if (heightDifference > 150) { // Keyboard is likely visible
-            // Adjust chat container position when keyboard is open
-            this._box.style.transform = `translateY(-${Math.min(heightDifference * 0.3, 100)}px)`;
-            this._box.style.maxHeight = `${Math.min(parseInt(CONFIG.height), currentHeight - 100)}px`;
-          } else {
-            // Reset position when keyboard is closed
-            this._box.style.transform = '';
-            this._box.style.maxHeight = CONFIG.height;
-          }
-        }
-      };
-
-      if (window.visualViewport) {
-        window.visualViewport.addEventListener('resize', handleViewportChange);
-      } else {
-        // Fallback for older browsers
-        window.addEventListener('resize', handleViewportChange);
-      }
     }
 
     _initializeWidget() {
@@ -940,23 +737,11 @@
     _toggleChat(open) {
       this._box.style.display = open ? 'flex' : 'none';
       if (!open) this._bubble.style.display = 'inline-flex';
-      
       if (open && this._first) {
         this._addBotMessage(CONFIG.welcomeMessage);
         this._first = false;
       }
-      
-      // Mobile-specific behavior: don't auto-focus on mobile to prevent keyboard
-      if (open) {
-        if (this._isMobile) {
-          // On mobile, don't focus immediately to prevent keyboard from appearing
-          // User needs to explicitly tap the input field
-          this._input.blur();
-        } else {
-          // On desktop, focus as normal
-          setTimeout(() => this._input.focus(), 100);
-        }
-      }
+      if (open) this._input.focus();
     }
 
     _addBotMessage(text) {
@@ -967,7 +752,7 @@
       bubble.textContent = text;
       msg.appendChild(bubble);
       this._msgs.appendChild(msg);
-      this._scrollToBottom();
+      this._msgs.scrollTop = this._msgs.scrollHeight;
       this._history.push({ role: 'assistant', content: text });
     }
 
@@ -979,18 +764,8 @@
       bubble.textContent = text;
       msg.appendChild(bubble);
       this._msgs.appendChild(msg);
-      this._scrollToBottom();
+      this._msgs.scrollTop = this._msgs.scrollHeight;
       this._history.push({ role: 'user', content: text });
-    }
-
-    _scrollToBottom() {
-      // Smooth scroll to bottom with better mobile support
-      requestAnimationFrame(() => {
-        this._msgs.scrollTo({
-          top: this._msgs.scrollHeight,
-          behavior: 'smooth'
-        });
-      });
     }
 
     _showTyping() {
@@ -1006,7 +781,7 @@
       }
       tip.appendChild(typing);
       this._msgs.appendChild(tip);
-      this._scrollToBottom();
+      this._msgs.scrollTop = this._msgs.scrollHeight;
     }
 
     _hideTyping() {
@@ -1087,11 +862,7 @@
       } finally {
         this._input.disabled = false;
         this._sendBtn.disabled = false;
-        
-        // On mobile, don't auto-focus after sending to prevent keyboard popup
-        if (!this._isMobile) {
-          this._input.focus();
-        }
+        this._input.focus();
       }
     }
   }
