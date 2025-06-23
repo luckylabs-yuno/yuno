@@ -18,17 +18,18 @@
     hasAttributes: thisScript ? Array.from(thisScript.attributes).map(a => a.name) : []
   });
   
-  // Configuration from script attributes with fallbacks
+
+
   const CONFIG = {
     // Core settings
     siteId: thisScript?.getAttribute('site_id') || null,
     apiEndpoint: thisScript?.getAttribute('api_endpoint') || 'https://api.helloyuno.com',
     
-    // Appearance
-    theme: thisScript?.getAttribute('theme') || 'dark',
+    // Appearance - CHANGED: Light mode as default with B&W colors
+    theme: thisScript?.getAttribute('theme') || 'light',
     position: thisScript?.getAttribute('position') || 'bottom-right',
     
-    // Colors (can override theme defaults)
+    // Colors - CHANGED: Default to black & white only
     primaryColor: thisScript?.getAttribute('primary_color') || null,
     accentColor: thisScript?.getAttribute('accent_color') || null,
     backgroundColor: thisScript?.getAttribute('background_color') || null,
@@ -152,50 +153,94 @@
   const template = document.createElement('template');
   template.innerHTML = `
     <style>
+      /* Dynamic CSS injection */
+      ${generateDynamicCSS()}
+      /* Enhanced Wallpaper Backgrounds - More Visible */
+      :host([theme="light"]) .messages {
+        background: 
+          /* Enhanced geometric pattern - more visible */
+          radial-gradient(circle at 25% 75%, rgba(0, 0, 0, 0.08) 0%, transparent 40%),
+          radial-gradient(circle at 75% 25%, rgba(0, 0, 0, 0.06) 0%, transparent 40%),
+          radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.04) 0%, transparent 40%),
+          /* Enhanced grid pattern */
+          linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+          linear-gradient(0deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+          /* Clean white base */
+          linear-gradient(135deg, #ffffff 0%, #f8f9fa 30%, #ffffff 70%, #f5f6f7 100%) !important;
+        background-size: 
+          180px 180px,
+          160px 160px, 
+          200px 200px,
+          20px 20px,
+          20px 20px,
+          100% 100% !important;
+        animation: lightWallpaperMove 45s ease-in-out infinite !important;
+      }
+
+      :host([theme="dark"]) .messages {
+        background: 
+          /* Enhanced dark pattern - more visible */
+          radial-gradient(circle at 25% 75%, rgba(255, 255, 255, 0.12) 0%, transparent 40%),
+          radial-gradient(circle at 75% 25%, rgba(255, 255, 255, 0.08) 0%, transparent 40%),
+          radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.06) 0%, transparent 40%),
+          /* Enhanced grid */
+          linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+          linear-gradient(0deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+          /* Rich dark base */
+          linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 30%, #1a1a1a 70%, #0f0f0f 100%) !important;
+        background-size: 
+          180px 180px,
+          160px 160px, 
+          200px 200px,
+          18px 18px,
+          18px 18px,
+          100% 100% !important;
+        animation: darkWallpaperMove 50s ease-in-out infinite !important;
+      }
+
+      /* Enhanced Wallpaper Animations */
+      @keyframes lightWallpaperMove {
+        0%, 100% { 
+          background-position: 0 0, 100% 100%, 50% 50%, 0 0, 0 0, 0 0;
+          filter: brightness(1);
+        }
+        25% { 
+          background-position: 20px 15px, 80% 85%, 70% 30%, 8px 6px, 8px 6px, 0 0;
+          filter: brightness(0.98);
+        }
+        50% { 
+          background-position: 35px 10px, 65% 90%, 30% 70%, 15px 4px, 15px 4px, 0 0;
+          filter: brightness(1.02);
+        }
+        75% { 
+          background-position: 15px 25px, 85% 75%, 60% 40%, 5px 10px, 5px 10px, 0 0;
+          filter: brightness(0.99);
+        }
+      }
+
+      @keyframes darkWallpaperMove {
+        0%, 100% { 
+          background-position: 0 0, 100% 100%, 50% 50%, 0 0, 0 0, 0 0;
+          filter: brightness(1);
+        }
+        33% { 
+          background-position: 25px 20px, 75% 80%, 65% 35%, 10px 8px, 10px 8px, 0 0;
+          filter: brightness(1.05);
+        }
+        66% { 
+          background-position: 40px 5px, 60% 95%, 35% 65%, 18px 2px, 18px 2px, 0 0;
+          filter: brightness(0.95);
+        }
+      }
+
+      /* MISSING CSS - ADD THIS TO YOUR YUNO.JS TEMPLATE */
+
       /* Base host styles */
       :host {
         position: fixed;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         z-index: 9999;
         --radius: 24px;
-      }
-
-      /* Dark theme variables */
-      :host([theme="dark"]) {
-        --accent: linear-gradient(to right, #FF6B35, #FF8C42);
-        --accent-solid: #FF6B35;
-        --accent-hover: linear-gradient(to right, #E55A2B, #FF6B35);
-        --panel-bg: rgba(0, 0, 0, 0.85);
-        --yuno-bg: rgba(20, 20, 20, 0.95);
-        --blur: blur(30px);
-        --border-color: rgba(255, 107, 53, 0.2);
-        --border-hover-color: rgba(255, 107, 53, 0.4);
-        --text-color: #ffffff;
-        --text-muted: #a0a0a0;
-        --header-bg: rgba(0, 0, 0, 0.9);
-        --close-bg: rgba(40, 40, 40, 0.8);
-        --close-color: #a0a0a0;
-        --close-hover-bg: rgba(60, 60, 60, 0.9);
-        --close-hover-color: #ffffff;
-      }
-
-      /* Light theme variables */
-      :host([theme="light"]) {
-        --accent: linear-gradient(to right, #FF6B35, #FF8C42);
-        --accent-solid: #FF6B35;
-        --accent-hover: linear-gradient(to right, #E55A2B, #FF6B35);
-        --panel-bg: rgba(255, 255, 255, 0.95);
-        --yuno-bg: rgba(248, 248, 248, 0.98);
-        --blur: blur(20px);
-        --border-color: rgba(0, 0, 0, 0.1);
-        --border-hover-color: rgba(0, 0, 0, 0.2);
-        --text-color: #1a1a1a;
-        --text-muted: #666666;
-        --header-bg: rgba(255, 255, 255, 0.98);
-        --close-bg: rgba(240, 240, 240, 0.8);
-        --close-color: #666666;
-        --close-hover-bg: rgba(220, 220, 220, 0.9);
-        --close-hover-color: #1a1a1a;
       }
 
       /* Blue theme */
@@ -236,9 +281,6 @@
         --close-hover-color: #ffffff;
       }
 
-      /* Dynamic CSS will be injected here */
-      ${generateDynamicCSS()}
-
       /* Authentication failure message */
       .auth-error {
         display: none;
@@ -254,7 +296,7 @@
         z-index: 10000;
       }
 
-      /* Trigger pill */
+      /* Trigger bubble */
       .bubble {
         display: inline-flex;
         align-items: center;
@@ -264,18 +306,20 @@
         height: 44px;
         border-radius: 22px;
         cursor: pointer;
-        box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         font-size: 14px;
         font-weight: 600;
         gap: 10px;
         transition: all 0.3s ease;
         border: 2px solid rgba(255, 255, 255, 0.1);
       }
+
       .bubble:hover {
         transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
         background: var(--accent-hover);
       }
+
       .bubble .icon { 
         font-size: 20px; 
         filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
@@ -293,25 +337,6 @@
         gap: 8px;
         animation: slideIn 0.5s ease-out;
       }
-      
-      /* Animation styles */
-      @keyframes slideIn {
-        from { transform: translateY(20px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-      }
-      @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-      }
-      @keyframes scaleIn {
-        from { transform: scale(0.8); opacity: 0; }
-        to { transform: scale(1); opacity: 1; }
-      }
-      
-      .teaser.fade { animation: fadeIn 0.5s ease-out; }
-      .teaser.scale { animation: scaleIn 0.5s ease-out; }
-      .chatbox.fade { animation: fadeIn 0.5s ease-out; }
-      .chatbox.scale { animation: scaleIn 0.5s ease-out; }
 
       .teaser .close {
         width: 32px;
@@ -326,10 +351,12 @@
         font-size: 16px;
         transition: background 0.2s ease, color 0.2s ease;
       }
+
       .teaser .close:hover {
         background: var(--close-hover-bg);
         color: var(--close-hover-color);
       }
+
       .teaser .input {
         flex: 1;
         background: var(--yuno-bg);
@@ -338,6 +365,7 @@
         font-size: 14px;
         color: var(--text-color);
       }
+
       .teaser .ask-btn {
         background: var(--accent);
         color: #fff;
@@ -348,6 +376,7 @@
         font-size: 14px;
         transition: background 0.2s ease;
       }
+
       .teaser .ask-btn:hover {
         background: var(--accent-hover);
       }
@@ -362,6 +391,7 @@
         overflow: hidden;
         animation: slideIn 0.5s ease-out;
       }
+
       .header {
         display: flex;
         align-items: center;
@@ -373,6 +403,7 @@
         background: var(--header-bg);
         backdrop-filter: var(--blur);
       }
+
       .close-btn {
         background: none;
         border: none;
@@ -381,6 +412,7 @@
         color: var(--close-color);
         transition: color 0.2s ease;
       }
+
       .close-btn:hover {
         color: var(--close-hover-color);
       }
@@ -394,130 +426,35 @@
         background: rgba(0, 0, 0, 0.02);
         border-bottom: 1px solid var(--border-color);
       }
+
       .powered-by a {
         color: var(--accent-solid);
         text-decoration: none;
         font-weight: 500;
       }
+
       .powered-by a:hover {
         text-decoration: underline;
       }
 
-      .messages {
-        flex: 1;
-        overflow-y: auto;
-        padding: 12px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-      }
       .messages::-webkit-scrollbar {
         display: none;
       }
+
       .input-row {
         display: flex;
         border-top: 1px solid var(--border-color);
         background: var(--header-bg);
         backdrop-filter: var(--blur);
       }
-      .input-row input {
-        flex: 1;
-        border: none;
-        padding: 10px;
-        font-size: 14px;
-        outline: none;
-        background: transparent;
-        color: var(--text-color);
-      }
+
       .input-row input::placeholder {
         color: var(--text-muted);
       }
-      .input-row button {
-        background: var(--accent);
-        color: #fff;
-        border: none;
-        padding: 0 16px;
-        cursor: pointer;
-        font-size: 14px;
-        transition: background 0.2s ease;
-      }
-      .input-row button:hover {
-        background: var(--accent-hover);
-      }
+
       .input-row button:disabled {
         opacity: 0.6;
         cursor: not-allowed;
-      }
-
-      /* Bot & User bubbles */
-      .chatbot-bubble {
-        position: relative;
-        padding: 12px 16px;
-        border-radius: 18px;
-        max-width: 80%;
-        line-height: 1.5;
-        font-size: 14px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        font-weight: 400;
-        word-wrap: break-word !important;
-        overflow-wrap: break-word !important;
-        hyphens: auto !important;
-        white-space: pre-wrap !important;
-      }
-      .msg.bot .chatbot-bubble {
-        background: var(--yuno-bg);
-        color: var(--text-color);
-        align-self: flex-start;
-        border: 1px solid var(--border-color);
-        margin-right: auto;
-      }
-      .msg.bot .chatbot-bubble::after {
-        content: '';
-        position: absolute;
-        bottom: -8px;
-        left: 20px;
-        border-width: 8px 8px 0 8px;
-        border-style: solid;
-        border-color: var(--yuno-bg) transparent transparent transparent;
-      }
-      .msg.user .chatbot-bubble {
-        background: var(--accent-solid);
-        color: #ffffff !important;
-        align-self: flex-end;
-        font-weight: 500;
-        margin-left: auto;
-        margin-right: 0 !important;
-      }
-      .msg.user .chatbot-bubble::after {
-        content: '';
-        position: absolute;
-        bottom: -8px;
-        right: 20px;
-        border-width: 8px 8px 0 8px;
-        border-style: solid;
-        border-color: var(--accent-solid) transparent transparent transparent;
-      }
-
-      .msg.user {
-        align-self: flex-end !important;
-        margin-left: auto !important;
-        margin-right: 0 !important;
-        width: 100%;
-        display: flex !important;
-        justify-content: flex-end !important;
-      }
-      
-      .msg.user .chatbot-bubble {
-        display: inline-block !important;
-        max-width: 80%;
-        text-align: left !important;
-        margin-right: 0 !important;
-        margin-left: auto !important;
-        word-wrap: break-word !important;
-        overflow-wrap: break-word !important;
-        hyphens: auto !important;
       }
 
       /* Typing indicator */
@@ -526,12 +463,14 @@
         gap: 4px;
         align-items: center;
       }
+
       .typing::before {
         content: '💭';
         font-size: 16px;
         margin-right: 6px;
         animation: pulse 1.5s infinite ease-in-out;
       }
+
       .typing .dot {
         width: 6px;
         height: 6px;
@@ -539,9 +478,26 @@
         border-radius: 50%;
         animation: bounce 0.8s infinite ease-in-out;
       }
+
       .typing .dot:nth-child(2) { animation-delay: 0.1s; }
       .typing .dot:nth-child(3) { animation-delay: 0.2s; }
       .typing .dot:nth-child(4) { animation-delay: 0.3s; }
+
+      /* Animation keyframes */
+      @keyframes slideIn {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+
+      @keyframes scaleIn {
+        from { transform: scale(0.8); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+      }
 
       @keyframes bounce {
         0%, 80%, 100% { 
@@ -553,354 +509,20 @@
           opacity: 1;
         }
       }
+
       @keyframes pulse {
         0%, 100% { opacity: 0.7; }
         50% { opacity: 1; }
       }
 
+      /* Animation classes */
+      .teaser.fade { animation: fadeIn 0.5s ease-out; }
+      .teaser.scale { animation: scaleIn 0.5s ease-out; }
+      .chatbox.fade { animation: fadeIn 0.5s ease-out; }
+      .chatbox.scale { animation: scaleIn 0.5s ease-out; }
+
       /* Hide elements based on config */
       .teaser.hide { display: none !important; }
-
-      /* 🎨 ANIMATED WALLPAPER BACKGROUNDS + MOBILE FIXES */
-      /* ADD THIS CSS TO YOUR YUNO.JS FILE */
-
-      /* Animated Background Patterns - Dark Mode */
-      :host([theme="dark"]) .messages {
-        background: 
-          /* Animated geometric pattern */
-          radial-gradient(circle at 20% 80%, rgba(255, 107, 53, 0.03) 0%, transparent 50%),
-          radial-gradient(circle at 80% 20%, rgba(255, 140, 66, 0.03) 0%, transparent 50%),
-          radial-gradient(circle at 40% 40%, rgba(255, 107, 53, 0.02) 0%, transparent 50%),
-          /* Moving grid pattern */
-          linear-gradient(90deg, rgba(255, 107, 53, 0.01) 1px, transparent 1px),
-          linear-gradient(0deg, rgba(255, 107, 53, 0.01) 1px, transparent 1px),
-          /* Base dark background */
-          linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%) !important;
-        background-size: 
-          200px 200px,
-          180px 180px, 
-          220px 220px,
-          20px 20px,
-          20px 20px,
-          100% 100% !important;
-        background-position: 
-          0 0,
-          100% 100%, 
-          50% 50%,
-          0 0,
-          0 0,
-          0 0 !important;
-        animation: darkModeFloat 60s ease-in-out infinite !important;
-      }
-
-      /* Animated Background Patterns - Light Mode */
-      :host([theme="light"]) .messages {
-        background: 
-          /* Animated geometric pattern */
-          radial-gradient(circle at 20% 80%, rgba(255, 107, 53, 0.04) 0%, transparent 50%),
-          radial-gradient(circle at 80% 20%, rgba(255, 140, 66, 0.04) 0%, transparent 50%),
-          radial-gradient(circle at 40% 40%, rgba(255, 107, 53, 0.03) 0%, transparent 50%),
-          /* Moving grid pattern */
-          linear-gradient(90deg, rgba(255, 107, 53, 0.02) 1px, transparent 1px),
-          linear-gradient(0deg, rgba(255, 107, 53, 0.02) 1px, transparent 1px),
-          /* Base light background */
-          linear-gradient(135deg, #ffffff 0%, #f8f9fa 50%, #ffffff 100%) !important;
-        background-size: 
-          200px 200px,
-          180px 180px, 
-          220px 220px,
-          25px 25px,
-          25px 25px,
-          100% 100% !important;
-        background-position: 
-          0 0,
-          100% 100%, 
-          50% 50%,
-          0 0,
-          0 0,
-          0 0 !important;
-        animation: lightModeFloat 60s ease-in-out infinite !important;
-      }
-
-      /* Blue Theme Wallpaper */
-      :host([theme="blue"]) .messages {
-        background: 
-          radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
-          radial-gradient(circle at 80% 20%, rgba(29, 78, 216, 0.03) 0%, transparent 50%),
-          radial-gradient(circle at 40% 40%, rgba(59, 130, 246, 0.02) 0%, transparent 50%),
-          linear-gradient(90deg, rgba(59, 130, 246, 0.01) 1px, transparent 1px),
-          linear-gradient(0deg, rgba(59, 130, 246, 0.01) 1px, transparent 1px),
-          linear-gradient(135deg, #0a0a0f 0%, #1a1a2a 50%, #0f0f1a 100%) !important;
-        background-size: 200px 200px, 180px 180px, 220px 220px, 20px 20px, 20px 20px, 100% 100% !important;
-        animation: blueModeFloat 60s ease-in-out infinite !important;
-      }
-
-      /* Green Theme Wallpaper */
-      :host([theme="green"]) .messages {
-        background: 
-          radial-gradient(circle at 20% 80%, rgba(16, 185, 129, 0.03) 0%, transparent 50%),
-          radial-gradient(circle at 80% 20%, rgba(5, 150, 105, 0.03) 0%, transparent 50%),
-          radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.02) 0%, transparent 50%),
-          linear-gradient(90deg, rgba(16, 185, 129, 0.01) 1px, transparent 1px),
-          linear-gradient(0deg, rgba(16, 185, 129, 0.01) 1px, transparent 1px),
-          linear-gradient(135deg, #0a0f0a 0%, #1a2a1a 50%, #0f1a0f 100%) !important;
-        background-size: 200px 200px, 180px 180px, 220px 220px, 20px 20px, 20px 20px, 100% 100% !important;
-        animation: greenModeFloat 60s ease-in-out infinite !important;
-      }
-
-      /* Wallpaper Animations */
-      @keyframes darkModeFloat {
-        0%, 100% { 
-          background-position: 0 0, 100% 100%, 50% 50%, 0 0, 0 0, 0 0;
-          transform: scale(1);
-        }
-        25% { 
-          background-position: 10px 10px, 90% 90%, 60% 40%, 5px 5px, 5px 5px, 0 0;
-          transform: scale(1.002);
-        }
-        50% { 
-          background-position: 20px 5px, 80% 95%, 40% 60%, 10px 2px, 10px 2px, 0 0;
-          transform: scale(1);
-        }
-        75% { 
-          background-position: 5px 15px, 95% 85%, 55% 45%, 3px 8px, 3px 8px, 0 0;
-          transform: scale(1.001);
-        }
-      }
-
-      @keyframes lightModeFloat {
-        0%, 100% { 
-          background-position: 0 0, 100% 100%, 50% 50%, 0 0, 0 0, 0 0;
-        }
-        33% { 
-          background-position: 15px 10px, 85% 90%, 65% 35%, 7px 5px, 7px 5px, 0 0;
-        }
-        66% { 
-          background-position: 25px 5px, 75% 95%, 35% 65%, 12px 3px, 12px 3px, 0 0;
-        }
-      }
-
-      @keyframes blueModeFloat {
-        0%, 100% { background-position: 0 0, 100% 100%, 50% 50%, 0 0, 0 0, 0 0; }
-        50% { background-position: 20px 10px, 80% 90%, 40% 60%, 8px 4px, 8px 4px, 0 0; }
-      }
-
-      @keyframes greenModeFloat {
-        0%, 100% { background-position: 0 0, 100% 100%, 50% 50%, 0 0, 0 0, 0 0; }
-        50% { background-position: 15px 15px, 85% 85%, 45% 55%, 6px 6px, 6px 6px, 0 0; }
-      }
-
-      /* ENHANCED CONTRAST & MOBILE FIXES */
-
-      /* Improved Message Bubble Contrast */
-      :host([theme="dark"]) .msg.bot .chatbot-bubble {
-        background: rgba(40, 40, 40, 0.95) !important;
-        color: #ffffff !important;
-        border: 1px solid rgba(255, 107, 53, 0.3) !important;
-        backdrop-filter: blur(10px) !important;
-      }
-
-      :host([theme="light"]) .msg.bot .chatbot-bubble {
-        background: rgba(255, 255, 255, 0.95) !important;
-        color: #1a1a1a !important;
-        border: 1px solid rgba(0, 0, 0, 0.15) !important;
-        backdrop-filter: blur(10px) !important;
-      }
-
-      /* Enhanced User Message Contrast */
-      :host([theme="dark"]) .msg.user .chatbot-bubble,
-      :host([theme="light"]) .msg.user .chatbot-bubble {
-        background: var(--accent-solid) !important;
-        color: #ffffff !important;
-        font-weight: 500 !important;
-        box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3) !important;
-      }
-
-      /* CRITICAL MOBILE FIXES */
-      @media screen and (max-width: 768px) {
-        /* FIXED: Proper viewport handling for Safari */
-        .chatbox {
-          position: fixed !important;
-          top: 0 !important;
-          left: 0 !important;
-          right: 0 !important;
-          bottom: 0 !important;
-          width: 100vw !important;
-          height: 100vh !important;
-          height: 100dvh !important; /* Dynamic viewport height for mobile browsers */
-          max-width: 100vw !important;
-          max-height: 100vh !important;
-          max-height: 100dvh !important;
-          border-radius: 0 !important;
-          z-index: 10000 !important;
-          margin: 0 !important;
-          
-          /* CRITICAL: Ensure proper layout */
-          display: flex !important;
-          flex-direction: column !important;
-          overflow: hidden !important;
-        }
-
-        /* Enhanced header for mobile */
-        .header {
-          padding: 16px 20px !important;
-          font-size: 18px !important;
-          font-weight: 600 !important;
-          border-bottom: 2px solid var(--border-color) !important;
-          background: var(--header-bg) !important;
-          min-height: 60px !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: space-between !important;
-          position: relative !important;
-          flex-shrink: 0 !important;
-          z-index: 10 !important;
-          
-          /* Enhanced contrast */
-          backdrop-filter: blur(20px) !important;
-          border-bottom: 2px solid rgba(255, 107, 53, 0.2) !important;
-        }
-
-        /* Powered by section */
-        .powered-by {
-          padding: 8px 20px !important;
-          font-size: 12px !important;
-          background: rgba(0, 0, 0, 0.05) !important;
-          border-bottom: 1px solid var(--border-color) !important;
-          flex-shrink: 0 !important;
-          backdrop-filter: blur(10px) !important;
-        }
-
-        /* CRITICAL: Messages container fix */
-        .messages {
-          flex: 1 !important;
-          padding: 16px 20px !important;
-          gap: 16px !important;
-          overflow-y: auto !important;
-          overflow-x: hidden !important;
-          -webkit-overflow-scrolling: touch !important;
-          display: flex !important;
-          flex-direction: column !important;
-          
-          /* Ensure it takes available space */
-          min-height: 0 !important;
-          height: auto !important;
-          
-          /* Enhanced scrollbar */
-          scrollbar-width: thin !important;
-          scrollbar-color: var(--accent-solid) transparent !important;
-        }
-
-        /* CRITICAL: Input row positioning */
-        .input-row {
-          padding: 16px 20px !important;
-          background: var(--header-bg) !important;
-          border-top: 2px solid var(--border-color) !important;
-          position: relative !important;
-          min-height: 70px !important;
-          flex-shrink: 0 !important;
-          display: flex !important;
-          align-items: center !important;
-          gap: 12px !important;
-          
-          /* Enhanced background */
-          backdrop-filter: blur(20px) !important;
-          border-top: 2px solid rgba(255, 107, 53, 0.2) !important;
-          
-          /* Ensure it stays at bottom */
-          margin-top: 0 !important;
-        }
-
-        /* CRITICAL: Input field fixes */
-        .input-row input {
-          flex: 1 !important;
-          padding: 16px 20px !important;
-          font-size: 16px !important; /* Prevents iOS zoom */
-          border-radius: 25px !important;
-          background: var(--yuno-bg) !important;
-          border: 2px solid var(--border-color) !important;
-          min-height: 50px !important;
-          color: var(--text-color) !important;
-          
-          /* iOS Safari fixes */
-          -webkit-appearance: none !important;
-          -webkit-border-radius: 25px !important;
-          touch-action: manipulation !important;
-          outline: none !important;
-          
-          /* Enhanced contrast */
-          backdrop-filter: blur(10px) !important;
-          box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1) !important;
-        }
-
-        .input-row input::placeholder {
-          color: var(--text-muted) !important;
-          opacity: 0.8 !important;
-        }
-
-        .input-row input:focus {
-          border-color: var(--accent-solid) !important;
-          box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.3) !important;
-          transform: scale(1) !important;
-          background: var(--yuno-bg) !important;
-        }
-
-        /* Enhanced send button */
-        .input-row button {
-          padding: 16px 24px !important;
-          font-size: 16px !important;
-          font-weight: 600 !important;
-          border-radius: 25px !important;
-          min-height: 50px !important;
-          min-width: 80px !important;
-          background: var(--accent) !important;
-          color: #ffffff !important;
-          border: none !important;
-          cursor: pointer !important;
-          
-          /* Enhanced styling */
-          box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3) !important;
-          touch-action: manipulation !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          transition: all 0.2s ease !important;
-        }
-
-        .input-row button:hover {
-          background: var(--accent-hover) !important;
-          box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4) !important;
-        }
-
-        .input-row button:disabled {
-          opacity: 0.6 !important;
-          cursor: not-allowed !important;
-          box-shadow: none !important;
-        }
-
-        /* Enhanced message bubbles */
-        .chatbot-bubble {
-          padding: 16px 20px !important;
-          border-radius: 20px !important;
-          max-width: 85% !important;
-          font-size: 16px !important;
-          line-height: 1.6 !important;
-          word-break: break-word !important;
-          display: block !important;
-          
-          /* Enhanced shadows */
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
-        }
-
-        /* Safe areas for iPhone */
-        .chatbox {
-          padding-top: env(safe-area-inset-top) !important;
-        }
-
-        .input-row {
-          padding-bottom: calc(16px + env(safe-area-inset-bottom)) !important;
-        }
-      }
 
       /* Force proper initialization */
       .chatbox {
@@ -910,6 +532,226 @@
       .chatbox[style*="flex"] {
         display: flex !important;
       }
+
+      /* Prevent body scroll when mobile chat is open */
+      body.yuno-mobile-chat-open {
+        overflow: hidden !important;
+        position: fixed !important;
+        width: 100% !important;
+        height: 100% !important;
+      }
+
+      /* Default Theme Variables - B&W Only */
+      :host([theme="light"]) {
+        --accent: #000000;
+        --accent-solid: #000000;
+        --accent-hover: #333333;
+        --panel-bg: rgba(255, 255, 255, 0.98);
+        --yuno-bg: rgba(248, 248, 248, 0.95);
+        --blur: blur(20px);
+        --border-color: rgba(0, 0, 0, 0.12);
+        --border-hover-color: rgba(0, 0, 0, 0.2);
+        --text-color: #1a1a1a;
+        --text-muted: #666666;
+        --header-bg: rgba(255, 255, 255, 0.98);
+        --close-bg: rgba(240, 240, 240, 0.8);
+        --close-color: #666666;
+        --close-hover-bg: rgba(220, 220, 220, 0.9);
+        --close-hover-color: #1a1a1a;
+      }
+
+      :host([theme="dark"]) {
+        --accent: #ffffff;
+        --accent-solid: #ffffff;
+        --accent-hover: #e0e0e0;
+        --panel-bg: rgba(26, 26, 26, 0.98);
+        --yuno-bg: rgba(40, 40, 40, 0.95);
+        --blur: blur(30px);
+        --border-color: rgba(255, 255, 255, 0.12);
+        --border-hover-color: rgba(255, 255, 255, 0.2);
+        --text-color: #ffffff;
+        --text-muted: #a0a0a0;
+        --header-bg: rgba(26, 26, 26, 0.98);
+        --close-bg: rgba(60, 60, 60, 0.8);
+        --close-color: #a0a0a0;
+        --close-hover-bg: rgba(80, 80, 80, 0.9);
+        --close-hover-color: #ffffff;
+      }
+
+      /* Enhanced Message Bubbles - Better Contrast */
+      .msg.bot .chatbot-bubble {
+        background: var(--yuno-bg) !important;
+        color: var(--text-color) !important;
+        border: 2px solid var(--border-color) !important;
+        backdrop-filter: blur(15px) !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+        align-self: flex-start !important;
+        margin-right: auto !important;
+        margin-left: 0 !important;
+        position: relative !important;
+      }
+
+      .msg.user .chatbot-bubble {
+        background: var(--accent-solid) !important;
+        color: var(--panel-bg) !important;
+        font-weight: 500 !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+        align-self: flex-end !important;
+        margin-left: auto !important;
+        margin-right: 0 !important;
+        border: 2px solid transparent !important;
+      }
+
+      /* Enhanced Message Layout - Consistent Spacing */
+      .messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px !important;
+        display: flex;
+        flex-direction: column;
+        gap: 16px !important;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+
+      .msg {
+        display: flex !important;
+        width: 100% !important;
+        margin-bottom: 8px !important;
+      }
+
+      .msg.bot {
+        justify-content: flex-start !important;
+      }
+
+      .msg.user {
+        justify-content: flex-end !important;
+      }
+
+      .chatbot-bubble {
+        position: relative;
+        padding: 14px 18px !important;
+        border-radius: 20px !important;
+        max-width: 75% !important;
+        line-height: 1.5 !important;
+        font-size: 14px !important;
+        font-weight: 400;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        hyphens: auto !important;
+        white-space: pre-wrap !important;
+      }
+
+
+      /* Force single instance */
+      yuno-chat:not(:first-of-type) {
+        display: none !important;
+      }
+
+      /* Enhanced Input Field */
+      .input-row input {
+        flex: 1;
+        border: none;
+        padding: 12px 16px !important;
+        font-size: 14px;
+        outline: none;
+        background: var(--yuno-bg) !important;
+        color: var(--text-color);
+        border: 2px solid var(--border-color) !important;
+        border-radius: 12px !important;
+        backdrop-filter: blur(10px) !important;
+      }
+
+      .input-row input:focus {
+        border-color: var(--accent-solid) !important;
+        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1) !important;
+      }
+
+      .input-row button {
+        background: var(--accent) !important;
+        color: var(--panel-bg) !important;
+        border: none;
+        padding: 12px 20px !important;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600 !important;
+        border-radius: 12px !important;
+        margin-left: 8px !important;
+        transition: all 0.2s ease;
+      }
+
+      .input-row button:hover {
+        background: var(--accent-hover) !important;
+        transform: translateY(-1px) !important;
+      }
+
+      /* Mobile Optimizations */
+      @media screen and (max-width: 768px) {
+        .chatbox {
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          bottom: 0 !important;
+          width: 100vw !important;
+          height: 100vh !important;
+          height: 100dvh !important;
+          max-width: 100vw !important;
+          max-height: 100vh !important;
+          border-radius: 0 !important;
+          z-index: 10000 !important;
+          margin: 0 !important;
+          display: flex !important;
+          flex-direction: column !important;
+          overflow: hidden !important;
+        }
+
+        .messages {
+          padding: 16px 20px !important;
+          gap: 20px !important;
+        }
+
+        .chatbot-bubble {
+          padding: 16px 20px !important;
+          border-radius: 18px !important;
+          max-width: 80% !important;
+          font-size: 16px !important;
+          line-height: 1.6 !important;
+        }
+
+        .msg.bot .chatbot-bubble {
+          border-bottom-left-radius: 6px !important;
+          margin-right: 40px !important;
+        }
+
+        .msg.user .chatbot-bubble {
+          border-bottom-right-radius: 6px !important;
+          margin-left: 40px !important;
+        }
+
+        .input-row {
+          padding: 16px 20px !important;
+          min-height: 70px !important;
+          gap: 12px !important;
+        }
+
+        .input-row input {
+          padding: 16px 20px !important;
+          font-size: 16px !important;
+          border-radius: 25px !important;
+          min-height: 50px !important;
+        }
+
+        .input-row button {
+          padding: 16px 24px !important;
+          font-size: 16px !important;
+          border-radius: 25px !important;
+          min-height: 50px !important;
+          min-width: 80px !important;
+        }
+      }
+
+      
     </style>
 
     <div class="auth-error">Authentication failed. Please refresh the page.</div>
@@ -932,6 +774,22 @@
       </div>
     </div>
   `;
+
+  function preventDuplicateWidgets() {
+      // Remove any existing Yuno widgets
+      const existingWidgets = document.querySelectorAll('yuno-chat');
+      if (existingWidgets.length > 0) {
+        existingWidgets.forEach(widget => widget.remove());
+      }
+      
+      // Clear any existing custom element definitions
+      if (customElements.get('yuno-chat')) {
+        console.log('🔄 Yuno: Preventing duplicate widget initialization');
+        return false;
+      }
+      
+      return true;
+  }
 
   class YunoChat extends HTMLElement {
     static get observedAttributes() { return ['theme']; }
@@ -1043,10 +901,13 @@
     }
 
     _initializeWidget() {
-      // Auto-show teaser based on config
+      // CRITICAL: Ensure chatbox is hidden on load
+      this._box.style.display = 'none';
+      
+      // Auto-show teaser based on config (but NOT the chatbox)
       if (CONFIG.autoShow && CONFIG.showTeaser) {
         setTimeout(() => {
-          if (!this._teaserShown) {
+          if (!this._teaserShown && this._box.style.display === 'none') {
             this._bubble.style.display = 'none';
             this._teaser.style.display = 'inline-flex';
             this._teaserShown = true;
@@ -1249,9 +1110,14 @@
     }
   }
 
-  // Widget initialization with authentication check
+// Widget initialization with authentication check
   async function initializeYunoWidget() {
     try {
+      // Prevent duplicates
+      if (!preventDuplicateWidgets()) {
+        return;
+      }
+
       // Pre-authenticate before creating widget element
       const response = await fetch(`${CONFIG.apiEndpoint}/widget/authenticate`, {
         method: 'POST',
@@ -1269,11 +1135,15 @@
         return;
       }
 
-      // Only create widget if authentication succeeds
+      // Only create widget if authentication succeeds and no duplicates exist
       customElements.define('yuno-chat', YunoChat);
 
       const widget = document.createElement('yuno-chat');
       widget.setAttribute('theme', CONFIG.theme);
+      
+      // Add unique identifier to prevent duplicates
+      widget.setAttribute('data-yuno-instance', Date.now());
+      
       document.body.appendChild(widget);
       
       console.log('✅ Yuno: Widget initialized successfully');
@@ -1282,6 +1152,10 @@
       console.error('🚨 Yuno: Widget initialization failed:', error);
     }
   }
+
+
+
+
 
   // Initialize when DOM is ready
   if (document.readyState === 'loading') {
