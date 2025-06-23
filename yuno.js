@@ -82,6 +82,12 @@
     localStorage.setItem('yuno_user_id', user_id);
   }
 
+  // Mobile detection
+  const isMobile = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+           (window.innerWidth <= 768);
+  };
+
   // Generate dynamic CSS based on config
   function generateDynamicCSS() {
     const position = CONFIG.position.split('-');
@@ -426,7 +432,7 @@
         flex: 1;
         border: none;
         padding: 10px;
-        font-size: 14px;
+        font-size: 16px; /* Increased from 14px to prevent zoom on iOS */
         outline: none;
         background: transparent;
         color: var(--text-color);
@@ -560,6 +566,60 @@
 
       /* Hide elements based on config */
       .teaser.hide { display: none !important; }
+
+      /* Mobile-specific styles */
+      @media (max-width: 768px) {
+        :host {
+          bottom: 0 !important;
+          right: 0 !important;
+          left: 0 !important;
+          top: 0 !important;
+        }
+        
+        .chatbox {
+          position: fixed !important;
+          width: 100% !important;
+          height: 100% !important;
+          max-height: 100% !important;
+          border-radius: 0 !important;
+          display: none;
+          z-index: 10000;
+        }
+        
+        .chatbox.mobile-open {
+          display: flex !important;
+          height: 100vh !important;
+          height: 100dvh !important; /* Dynamic viewport height for mobile browsers */
+        }
+        
+        /* Ensure chatbox stays in bounds */
+        .messages {
+          max-height: calc(100vh - 120px);
+          max-height: calc(100dvh - 120px);
+        }
+        
+        /* Prevent body scroll when chat is open */
+        body.yuno-chat-open {
+          overflow: hidden !important;
+          position: fixed !important;
+          width: 100% !important;
+        }
+        
+        /* Larger font sizes on mobile to prevent zoom */
+        .input-row input {
+          font-size: 16px !important; /* iOS requires 16px to prevent zoom */
+        }
+        
+        .bubble, .teaser {
+          bottom: 20px !important;
+          right: 20px !important;
+        }
+        
+        /* Hide teaser on mobile */
+        .teaser {
+          display: none !important;
+        }
+      }
     </style>
 
     <div class="auth-error">Authentication failed. Please refresh the page.</div>
@@ -615,6 +675,8 @@
       this._retryCount = 0;
       this._maxRetries = 2;
       this._authenticated = false;
+      this._originalBodyPosition = '';
+      this._originalBodyOverflow = '';
     }
 
     async connectedCallback() {
@@ -693,8 +755,8 @@
     }
 
     _initializeWidget() {
-      // Auto-show teaser based on config
-      if (CONFIG.autoShow && CONFIG.showTeaser) {
+      // Auto-show teaser based on config (but not on mobile)
+      if (CONFIG.autoShow && CONFIG.showTeaser && !isMobile()) {
         setTimeout(() => {
           if (!this._teaserShown) {
             this._bubble.style.display = 'none';
@@ -735,13 +797,46 @@
     }
 
     _toggleChat(open) {
-      this._box.style.display = open ? 'flex' : 'none';
+      if (isMobile()) {
+        if (open) {
+          // Store original body styles
+          this._originalBodyPosition = document.body.style.position;
+          this._originalBodyOverflow = document.body.style.overflow;
+          
+          // Prevent body scroll
+          document.body.classList.add('yuno-chat-open');
+          document.body.style.overflow = 'hidden';
+          document.body.style.position = 'fixed';
+          
+          // Add mobile-open class
+          this._box.classList.add('mobile-open');
+          this._box.style.display = 'flex';
+        } else {
+          // Restore body scroll
+          document.body.classList.remove('yuno-chat-open');
+          document.body.style.position = this._originalBodyPosition;
+          document.body.style.overflow = this._originalBodyOverflow;
+          
+          // Remove mobile-open class
+          this._box.classList.remove('mobile-open');
+          this._box.style.display = 'none';
+        }
+      } else {
+        // Desktop behavior
+        this._box.style.display = open ? 'flex' : 'none';
+      }
+      
       if (!open) this._bubble.style.display = 'inline-flex';
+      
       if (open && this._first) {
         this._addBotMessage(CONFIG.welcomeMessage);
         this._first = false;
       }
-      if (open) this._input.focus();
+      
+      // Only focus on desktop
+      if (open && !isMobile()) {
+        this._input.focus();
+      }
     }
 
     _addBotMessage(text) {
@@ -862,7 +957,10 @@
       } finally {
         this._input.disabled = false;
         this._sendBtn.disabled = false;
-        this._input.focus();
+        // Only focus on desktop
+        if (!isMobile()) {
+          this._input.focus();
+        }
       }
     }
   }
