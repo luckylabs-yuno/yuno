@@ -561,11 +561,164 @@
       /* Hide elements based on config */
       .teaser.hide { display: none !important; }
 
-      /* 📱 CORRECTED MOBILE FULL-SCREEN IMPLEMENTATION */
-      /* REPLACE THE PREVIOUS MOBILE CSS WITH THIS FIXED VERSION */
+      /* 🎨 ANIMATED WALLPAPER BACKGROUNDS + MOBILE FIXES */
+      /* ADD THIS CSS TO YOUR YUNO.JS FILE */
 
+      /* Animated Background Patterns - Dark Mode */
+      :host([theme="dark"]) .messages {
+        background: 
+          /* Animated geometric pattern */
+          radial-gradient(circle at 20% 80%, rgba(255, 107, 53, 0.03) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(255, 140, 66, 0.03) 0%, transparent 50%),
+          radial-gradient(circle at 40% 40%, rgba(255, 107, 53, 0.02) 0%, transparent 50%),
+          /* Moving grid pattern */
+          linear-gradient(90deg, rgba(255, 107, 53, 0.01) 1px, transparent 1px),
+          linear-gradient(0deg, rgba(255, 107, 53, 0.01) 1px, transparent 1px),
+          /* Base dark background */
+          linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%) !important;
+        background-size: 
+          200px 200px,
+          180px 180px, 
+          220px 220px,
+          20px 20px,
+          20px 20px,
+          100% 100% !important;
+        background-position: 
+          0 0,
+          100% 100%, 
+          50% 50%,
+          0 0,
+          0 0,
+          0 0 !important;
+        animation: darkModeFloat 60s ease-in-out infinite !important;
+      }
+
+      /* Animated Background Patterns - Light Mode */
+      :host([theme="light"]) .messages {
+        background: 
+          /* Animated geometric pattern */
+          radial-gradient(circle at 20% 80%, rgba(255, 107, 53, 0.04) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(255, 140, 66, 0.04) 0%, transparent 50%),
+          radial-gradient(circle at 40% 40%, rgba(255, 107, 53, 0.03) 0%, transparent 50%),
+          /* Moving grid pattern */
+          linear-gradient(90deg, rgba(255, 107, 53, 0.02) 1px, transparent 1px),
+          linear-gradient(0deg, rgba(255, 107, 53, 0.02) 1px, transparent 1px),
+          /* Base light background */
+          linear-gradient(135deg, #ffffff 0%, #f8f9fa 50%, #ffffff 100%) !important;
+        background-size: 
+          200px 200px,
+          180px 180px, 
+          220px 220px,
+          25px 25px,
+          25px 25px,
+          100% 100% !important;
+        background-position: 
+          0 0,
+          100% 100%, 
+          50% 50%,
+          0 0,
+          0 0,
+          0 0 !important;
+        animation: lightModeFloat 60s ease-in-out infinite !important;
+      }
+
+      /* Blue Theme Wallpaper */
+      :host([theme="blue"]) .messages {
+        background: 
+          radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(29, 78, 216, 0.03) 0%, transparent 50%),
+          radial-gradient(circle at 40% 40%, rgba(59, 130, 246, 0.02) 0%, transparent 50%),
+          linear-gradient(90deg, rgba(59, 130, 246, 0.01) 1px, transparent 1px),
+          linear-gradient(0deg, rgba(59, 130, 246, 0.01) 1px, transparent 1px),
+          linear-gradient(135deg, #0a0a0f 0%, #1a1a2a 50%, #0f0f1a 100%) !important;
+        background-size: 200px 200px, 180px 180px, 220px 220px, 20px 20px, 20px 20px, 100% 100% !important;
+        animation: blueModeFloat 60s ease-in-out infinite !important;
+      }
+
+      /* Green Theme Wallpaper */
+      :host([theme="green"]) .messages {
+        background: 
+          radial-gradient(circle at 20% 80%, rgba(16, 185, 129, 0.03) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(5, 150, 105, 0.03) 0%, transparent 50%),
+          radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.02) 0%, transparent 50%),
+          linear-gradient(90deg, rgba(16, 185, 129, 0.01) 1px, transparent 1px),
+          linear-gradient(0deg, rgba(16, 185, 129, 0.01) 1px, transparent 1px),
+          linear-gradient(135deg, #0a0f0a 0%, #1a2a1a 50%, #0f1a0f 100%) !important;
+        background-size: 200px 200px, 180px 180px, 220px 220px, 20px 20px, 20px 20px, 100% 100% !important;
+        animation: greenModeFloat 60s ease-in-out infinite !important;
+      }
+
+      /* Wallpaper Animations */
+      @keyframes darkModeFloat {
+        0%, 100% { 
+          background-position: 0 0, 100% 100%, 50% 50%, 0 0, 0 0, 0 0;
+          transform: scale(1);
+        }
+        25% { 
+          background-position: 10px 10px, 90% 90%, 60% 40%, 5px 5px, 5px 5px, 0 0;
+          transform: scale(1.002);
+        }
+        50% { 
+          background-position: 20px 5px, 80% 95%, 40% 60%, 10px 2px, 10px 2px, 0 0;
+          transform: scale(1);
+        }
+        75% { 
+          background-position: 5px 15px, 95% 85%, 55% 45%, 3px 8px, 3px 8px, 0 0;
+          transform: scale(1.001);
+        }
+      }
+
+      @keyframes lightModeFloat {
+        0%, 100% { 
+          background-position: 0 0, 100% 100%, 50% 50%, 0 0, 0 0, 0 0;
+        }
+        33% { 
+          background-position: 15px 10px, 85% 90%, 65% 35%, 7px 5px, 7px 5px, 0 0;
+        }
+        66% { 
+          background-position: 25px 5px, 75% 95%, 35% 65%, 12px 3px, 12px 3px, 0 0;
+        }
+      }
+
+      @keyframes blueModeFloat {
+        0%, 100% { background-position: 0 0, 100% 100%, 50% 50%, 0 0, 0 0, 0 0; }
+        50% { background-position: 20px 10px, 80% 90%, 40% 60%, 8px 4px, 8px 4px, 0 0; }
+      }
+
+      @keyframes greenModeFloat {
+        0%, 100% { background-position: 0 0, 100% 100%, 50% 50%, 0 0, 0 0, 0 0; }
+        50% { background-position: 15px 15px, 85% 85%, 45% 55%, 6px 6px, 6px 6px, 0 0; }
+      }
+
+      /* ENHANCED CONTRAST & MOBILE FIXES */
+
+      /* Improved Message Bubble Contrast */
+      :host([theme="dark"]) .msg.bot .chatbot-bubble {
+        background: rgba(40, 40, 40, 0.95) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 107, 53, 0.3) !important;
+        backdrop-filter: blur(10px) !important;
+      }
+
+      :host([theme="light"]) .msg.bot .chatbot-bubble {
+        background: rgba(255, 255, 255, 0.95) !important;
+        color: #1a1a1a !important;
+        border: 1px solid rgba(0, 0, 0, 0.15) !important;
+        backdrop-filter: blur(10px) !important;
+      }
+
+      /* Enhanced User Message Contrast */
+      :host([theme="dark"]) .msg.user .chatbot-bubble,
+      :host([theme="light"]) .msg.user .chatbot-bubble {
+        background: var(--accent-solid) !important;
+        color: #ffffff !important;
+        font-weight: 500 !important;
+        box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3) !important;
+      }
+
+      /* CRITICAL MOBILE FIXES */
       @media screen and (max-width: 768px) {
-        /* Mobile Full-Screen Chat Experience - FIXED */
+        /* FIXED: Proper viewport handling for Safari */
         .chatbox {
           position: fixed !important;
           top: 0 !important;
@@ -574,29 +727,27 @@
           bottom: 0 !important;
           width: 100vw !important;
           height: 100vh !important;
+          height: 100dvh !important; /* Dynamic viewport height for mobile browsers */
           max-width: 100vw !important;
           max-height: 100vh !important;
+          max-height: 100dvh !important;
           border-radius: 0 !important;
           z-index: 10000 !important;
           margin: 0 !important;
           
-          /* FIXED: Solid background to hide website content */
-          background: var(--panel-bg) !important;
-          backdrop-filter: none !important;
-          box-shadow: none !important;
-          
-          /* CRITICAL: Ensure proper flex layout */
+          /* CRITICAL: Ensure proper layout */
           display: flex !important;
           flex-direction: column !important;
+          overflow: hidden !important;
         }
 
-        /* Enhanced mobile header */
+        /* Enhanced header for mobile */
         .header {
           padding: 16px 20px !important;
           font-size: 18px !important;
+          font-weight: 600 !important;
           border-bottom: 2px solid var(--border-color) !important;
           background: var(--header-bg) !important;
-          backdrop-filter: none !important;
           min-height: 60px !important;
           display: flex !important;
           align-items: center !important;
@@ -604,179 +755,144 @@
           position: relative !important;
           flex-shrink: 0 !important;
           z-index: 10 !important;
-        }
-
-        /* Mobile close button */
-        .close-btn {
-          font-size: 24px !important;
-          padding: 8px !important;
-          min-width: 44px !important;
-          min-height: 44px !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          border-radius: 8px !important;
-          background: rgba(0, 0, 0, 0.1) !important;
-          color: var(--close-color) !important;
+          
+          /* Enhanced contrast */
+          backdrop-filter: blur(20px) !important;
+          border-bottom: 2px solid rgba(255, 107, 53, 0.2) !important;
         }
 
         /* Powered by section */
         .powered-by {
           padding: 8px 20px !important;
           font-size: 12px !important;
-          background: rgba(0, 0, 0, 0.03) !important;
+          background: rgba(0, 0, 0, 0.05) !important;
           border-bottom: 1px solid var(--border-color) !important;
           flex-shrink: 0 !important;
+          backdrop-filter: blur(10px) !important;
         }
 
-        /* FIXED: Messages container with proper flex */
+        /* CRITICAL: Messages container fix */
         .messages {
           flex: 1 !important;
           padding: 16px 20px !important;
           gap: 16px !important;
           overflow-y: auto !important;
+          overflow-x: hidden !important;
           -webkit-overflow-scrolling: touch !important;
           display: flex !important;
           flex-direction: column !important;
           
-          /* Custom mobile scrollbar */
+          /* Ensure it takes available space */
+          min-height: 0 !important;
+          height: auto !important;
+          
+          /* Enhanced scrollbar */
           scrollbar-width: thin !important;
           scrollbar-color: var(--accent-solid) transparent !important;
         }
 
-        .messages::-webkit-scrollbar {
-          width: 4px !important;
-        }
-
-        .messages::-webkit-scrollbar-track {
-          background: transparent !important;
-        }
-
-        .messages::-webkit-scrollbar-thumb {
-          background: var(--accent-solid) !important;
-          border-radius: 2px !important;
-        }
-
-        /* Enhanced mobile message bubbles */
-        .chatbot-bubble {
-          padding: 16px 20px !important;
-          border-radius: 20px !important;
-          max-width: 85% !important;
-          font-size: 16px !important;
-          line-height: 1.6 !important;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
-          word-break: break-word !important;
-          display: block !important;
-        }
-
-        /* Bot message alignment */
-        .msg.bot {
-          align-self: flex-start !important;
-          width: 100% !important;
-          display: flex !important;
-          justify-content: flex-start !important;
-        }
-
-        .msg.bot .chatbot-bubble {
-          margin-right: 20px !important;
-          margin-left: 0 !important;
-          border-bottom-left-radius: 8px !important;
-          background: var(--yuno-bg) !important;
-          color: var(--text-color) !important;
-          border: 1px solid var(--border-color) !important;
-        }
-
-        /* User message alignment */
-        .msg.user {
-          align-self: flex-end !important;
-          width: 100% !important;
-          display: flex !important;
-          justify-content: flex-end !important;
-        }
-
-        .msg.user .chatbot-bubble {
-          margin-left: 20px !important;
-          margin-right: 0 !important;
-          border-bottom-right-radius: 8px !important;
-          background: var(--accent-solid) !important;
-          color: #ffffff !important;
-        }
-
-        /* CRITICAL FIX: Input row must be visible and functional */
+        /* CRITICAL: Input row positioning */
         .input-row {
           padding: 16px 20px !important;
           background: var(--header-bg) !important;
           border-top: 2px solid var(--border-color) !important;
           position: relative !important;
-          bottom: 0 !important;
           min-height: 70px !important;
           flex-shrink: 0 !important;
           display: flex !important;
           align-items: center !important;
           gap: 12px !important;
           
+          /* Enhanced background */
+          backdrop-filter: blur(20px) !important;
+          border-top: 2px solid rgba(255, 107, 53, 0.2) !important;
+          
           /* Ensure it stays at bottom */
-          margin-top: auto !important;
+          margin-top: 0 !important;
         }
 
-        /* CRITICAL FIX: Input field styling */
+        /* CRITICAL: Input field fixes */
         .input-row input {
           flex: 1 !important;
           padding: 16px 20px !important;
-          font-size: 16px !important;
+          font-size: 16px !important; /* Prevents iOS zoom */
           border-radius: 25px !important;
           background: var(--yuno-bg) !important;
           border: 2px solid var(--border-color) !important;
           min-height: 50px !important;
           color: var(--text-color) !important;
           
-          /* Prevent iOS zoom and enhance UX */
+          /* iOS Safari fixes */
           -webkit-appearance: none !important;
           -webkit-border-radius: 25px !important;
           touch-action: manipulation !important;
           outline: none !important;
+          
+          /* Enhanced contrast */
+          backdrop-filter: blur(10px) !important;
+          box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1) !important;
         }
 
         .input-row input::placeholder {
           color: var(--text-muted) !important;
+          opacity: 0.8 !important;
         }
 
         .input-row input:focus {
           border-color: var(--accent-solid) !important;
-          box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2) !important;
+          box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.3) !important;
           transform: scale(1) !important;
+          background: var(--yuno-bg) !important;
         }
 
-        /* CRITICAL FIX: Send button styling */
+        /* Enhanced send button */
         .input-row button {
           padding: 16px 24px !important;
           font-size: 16px !important;
+          font-weight: 600 !important;
           border-radius: 25px !important;
           min-height: 50px !important;
           min-width: 80px !important;
-          font-weight: 600 !important;
           background: var(--accent) !important;
           color: #ffffff !important;
           border: none !important;
           cursor: pointer !important;
           
-          /* Enhanced touch target */
+          /* Enhanced styling */
+          box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3) !important;
           touch-action: manipulation !important;
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
+          transition: all 0.2s ease !important;
         }
 
         .input-row button:hover {
           background: var(--accent-hover) !important;
+          box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4) !important;
         }
 
         .input-row button:disabled {
           opacity: 0.6 !important;
           cursor: not-allowed !important;
+          box-shadow: none !important;
         }
 
-        /* Safe area support for iPhone */
+        /* Enhanced message bubbles */
+        .chatbot-bubble {
+          padding: 16px 20px !important;
+          border-radius: 20px !important;
+          max-width: 85% !important;
+          font-size: 16px !important;
+          line-height: 1.6 !important;
+          word-break: break-word !important;
+          display: block !important;
+          
+          /* Enhanced shadows */
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        /* Safe areas for iPhone */
         .chatbox {
           padding-top: env(safe-area-inset-top) !important;
         }
@@ -784,81 +900,15 @@
         .input-row {
           padding-bottom: calc(16px + env(safe-area-inset-bottom)) !important;
         }
-
-        /* Enhanced mobile animations */
-        .chatbox.slide {
-          animation: mobileSlideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
-        }
-
-        .chatbox.fade {
-          animation: mobileFadeIn 0.3s ease-out !important;
-        }
-
-        .chatbox.scale {
-          animation: mobileScaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-        }
       }
 
-      /* Mobile Landscape Optimizations */
-      @media screen and (max-width: 768px) and (orientation: landscape) {
-        .header {
-          min-height: 50px !important;
-          padding: 12px 20px !important;
-          font-size: 16px !important;
-        }
-
-        .messages {
-          padding: 12px 20px !important;
-        }
-
-        .input-row {
-          min-height: 60px !important;
-          padding: 12px 20px !important;
-        }
-
-        .input-row input, .input-row button {
-          min-height: 44px !important;
-        }
+      /* Force proper initialization */
+      .chatbox {
+        display: none !important;
       }
 
-      /* Improved Mobile Animations */
-      @keyframes mobileSlideIn {
-        from { 
-          transform: translateY(100vh) !important; 
-          opacity: 0 !important;
-        }
-        to { 
-          transform: translateY(0) !important; 
-          opacity: 1 !important;
-        }
-      }
-
-      @keyframes mobileFadeIn {
-        from { 
-          opacity: 0 !important; 
-        }
-        to { 
-          opacity: 1 !important; 
-        }
-      }
-
-      @keyframes mobileScaleIn {
-        from { 
-          transform: scale(0.95) translateY(20px) !important; 
-          opacity: 0 !important;
-        }
-        to { 
-          transform: scale(1) translateY(0) !important; 
-          opacity: 1 !important;
-        }
-      }
-
-      /* CRITICAL: Prevent body scroll when mobile chat is open */
-      body.yuno-mobile-chat-open {
-        overflow: hidden !important;
-        position: fixed !important;
-        width: 100% !important;
-        height: 100% !important;
+      .chatbox[style*="flex"] {
+        display: flex !important;
       }
     </style>
 
