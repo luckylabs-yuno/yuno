@@ -557,308 +557,149 @@
         0%, 100% { opacity: 0.7; }
         50% { opacity: 1; }
       }
-      
-      // 📱 MOBILE FULL-SCREEN ENHANCEMENT FOR YUNO.JS
-    // Add these CSS rules to your existing yuno.js file CSS section
-    // This keeps all existing functionality while adding mobile-first design
-    
-    /* ADD TO EXISTING CSS IN YUNO.JS - MOBILE RESPONSIVE ENHANCEMENTS */
-    
-    /* Mobile Detection and Base Responsive Design */
-    @media screen and (max-width: 768px) {
-    /* Mobile Full-Screen Chat Experience */
-    .chatbox {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    max-width: 100vw !important;
-    max-height: 100vh !important;
-    border-radius: 0 !important;
-    z-index: 10000 !important;
-    margin: 0 !important;
-    
-    ```
-    /* Enhanced mobile backdrop */
-    background: var(--panel-bg) !important;
-    backdrop-filter: none !important; /* Remove blur for better performance on mobile */
-    box-shadow: none !important;
-    ```
-    
-    }
-    
-    /* Keep desktop positioning for bubble and teaser */
-    .bubble, .teaser {
-    position: fixed !important;
-    /* Maintain original positioning logic from desktop */
-    }
-    
-    /* Mobile-optimized header */
-    .header {
-    padding: 16px 20px !important;
-    font-size: 18px !important;
-    border-bottom: 2px solid var(–border-color) !important;
-    background: var(–header-bg) !important;
-    backdrop-filter: none !important;
-    min-height: 60px !important;
-    display: flex !important;
-    align-items: center !important;
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 10 !important;
-    }
-    
-    /* Mobile close button */
-    .close-btn {
-    font-size: 24px !important;
-    padding: 8px !important;
-    min-width: 44px !important;
-    min-height: 44px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    border-radius: 8px !important;
-    background: rgba(0, 0, 0, 0.1) !important;
-    }
-    
-    /* Powered by section - mobile optimized */
-    .powered-by {
-    padding: 8px 20px !important;
-    font-size: 12px !important;
-    border-bottom: 1px solid var(–border-color) !important;
-    background: rgba(0, 0, 0, 0.03) !important;
-    }
-    
-    /* Mobile messages container */
-    .messages {
-    flex: 1 !important;
-    padding: 16px 20px !important;
-    gap: 16px !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    
-    ```
-    /* Custom mobile scrollbar */
-    scrollbar-width: thin !important;
-    scrollbar-color: var(--accent-solid) transparent !important;
-    ```
-    
-    }
-    
-    .messages::-webkit-scrollbar {
-    width: 4px !important;
-    }
-    
-    .messages::-webkit-scrollbar-track {
-    background: transparent !important;
-    }
-    
-    .messages::-webkit-scrollbar-thumb {
-    background: var(–accent-solid) !important;
-    border-radius: 2px !important;
-    }
-    
-    /* Mobile message bubbles */
-    .chatbot-bubble {
-    padding: 16px 20px !important;
-    border-radius: 20px !important;
-    max-width: 85% !important;
-    font-size: 16px !important;
-    line-height: 1.6 !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
-    word-break: break-word !important;
-    }
-    
-    /* Mobile bot message styling */
-    .msg.bot .chatbot-bubble {
-    margin-right: 20px !important;
-    border-bottom-left-radius: 8px !important;
-    }
-    
-    /* Mobile user message styling */
-    .msg.user .chatbot-bubble {
-    margin-left: 20px !important;
-    border-bottom-right-radius: 8px !important;
-    }
-    
-    /* Mobile input row - CRITICAL: Prevent keyboard zoom */
-    .input-row {
-    padding: 16px 20px !important;
-    background: var(–header-bg) !important;
-    border-top: 2px solid var(–border-color) !important;
-    position: sticky !important;
-    bottom: 0 !important;
-    backdrop-filter: none !important;
-    min-height: 70px !important;
-    }
-    
-    .input-row input {
-    padding: 16px 20px !important;
-    font-size: 16px !important; /* CRITICAL: 16px prevents iOS zoom */
-    border-radius: 25px !important;
-    background: var(–yuno-bg) !important;
-    border: 2px solid var(–border-color) !important;
-    min-height: 50px !important;
-    
-    ```
-    /* Disable iOS styling */
-    -webkit-appearance: none !important;
-    -webkit-border-radius: 25px !important;
-    
-    /* Prevent zoom and enhance UX */
-    touch-action: manipulation !important;
-    ```
-    
-    }
-    
-    .input-row input:focus {
-    border-color: var(–accent-solid) !important;
-    outline: none !important;
-    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2) !important;
-    /* Prevent browser zoom on focus */
-    transform: scale(1) !important;
-    }
-    
-    .input-row button {
-    padding: 16px 24px !important;
-    font-size: 16px !important;
-    border-radius: 25px !important;
-    min-height: 50px !important;
-    min-width: 80px !important;
-    font-weight: 600 !important;
-    margin-left: 12px !important;
-    
-    ```
-    /* Enhanced touch target */
-    touch-action: manipulation !important;
-    ```
-    
-    }
-    
-    /* Mobile animation adjustments */
-    .chatbox.slideIn, .chatbox.slide {
-    animation: mobileSlideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
-    }
-    
-    .chatbox.fadeIn, .chatbox.fade {
-    animation: mobileFadeIn 0.3s ease-out !important;
-    }
-    
-    .chatbox.scaleIn, .chatbox.scale {
-    animation: mobileScaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-    }
-    
-    /* Mobile typing indicator */
-    .typing-indicator {
-    padding: 20px !important;
-    font-size: 16px !important;
-    }
-    
-    /* Mobile welcome message styling */
-    .msg.bot:first-child .chatbot-bubble {
-    background: linear-gradient(135deg, var(–accent-solid), var(–accent)) !important;
-    color: white !important;
-    font-weight: 500 !important;
-    margin-bottom: 8px !important;
-    }
-    
-    /* Enhanced mobile safe areas for iPhone */
-    .chatbox {
-    padding-top: env(safe-area-inset-top) !important;
-    padding-bottom: env(safe-area-inset-bottom) !important;
-    }
-    
-    .input-row {
-    padding-bottom: calc(16px + env(safe-area-inset-bottom)) !important;
-    }
-    }
-    
-    /* Mobile Landscape Optimizations */
-    @media screen and (max-width: 768px) and (orientation: landscape) {
-    .header {
-    min-height: 50px !important;
-    padding: 12px 20px !important;
-    font-size: 16px !important;
-    }
-    
-    .messages {
-    padding: 12px 20px !important;
-    }
-    
-    .input-row {
-    min-height: 60px !important;
-    padding: 12px 20px !important;
-    }
-    
-    .input-row input, .input-row button {
-    min-height: 44px !important;
-    }
-    }
-    
-    /* Custom Mobile Animations */
-    @keyframes mobileSlideIn {
-    from {
-    transform: translateY(100vh) !important;
-    opacity: 0 !important;
-    }
-    to {
-    transform: translateY(0) !important;
-    opacity: 1 !important;
-    }
-    }
-    
-    @keyframes mobileFadeIn {
-    from {
-    opacity: 0 !important;
-    backdrop-filter: blur(0px) !important;
-    }
-    to {
-    opacity: 1 !important;
-    backdrop-filter: blur(0px) !important;
-    }
-    }
-    
-    @keyframes mobileScaleIn {
-    from {
-    transform: scale(0.95) translateY(20px) !important;
-    opacity: 0 !important;
-    }
-    to {
-    transform: scale(1) translateY(0) !important;
-    opacity: 1 !important;
-    }
-    }
-    
-    /* Prevent body scroll when mobile chat is open */
-    @media screen and (max-width: 768px) {
-    body.yuno-mobile-chat-open {
-    overflow: hidden !important;
-    position: fixed !important;
-    width: 100% !important;
-    height: 100% !important;
-    }
-    }
-    
-    /* Tablet and larger screens - keep original behavior */
-    @media screen and (min-width: 769px) {
-    .chatbox {
-    /* Original desktop styles remain unchanged */
-    }
-    }
-    
-    /*
-    JAVASCRIPT ADDITIONS FOR MOBILE BODY SCROLL PREVENTION
-    Add this to your existing JavaScript in yuno.js:
-    */
-
-
-
 
       /* Hide elements based on config */
       .teaser.hide { display: none !important; }
+
+          /* 📱 MOBILE FULL-SCREEN ENHANCEMENT */
+    @media screen and (max-width: 768px) {
+      /* Mobile Full-Screen Chat Experience */
+      .chatbox {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        max-width: 100vw !important;
+        max-height: 100vh !important;
+        border-radius: 0 !important;
+        z-index: 10000 !important;
+        margin: 0 !important;
+        background: var(--panel-bg) !important;
+        backdrop-filter: none !important;
+        box-shadow: none !important;
+      }
+
+      .header {
+        padding: 16px 20px !important;
+        font-size: 18px !important;
+        border-bottom: 2px solid var(--border-color) !important;
+        background: var(--header-bg) !important;
+        backdrop-filter: none !important;
+        min-height: 60px !important;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 10 !important;
+      }
+
+      .close-btn {
+        font-size: 24px !important;
+        padding: 8px !important;
+        min-width: 44px !important;
+        min-height: 44px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 8px !important;
+        background: rgba(0, 0, 0, 0.1) !important;
+      }
+
+      .powered-by {
+        padding: 8px 20px !important;
+        font-size: 12px !important;
+      }
+
+      .messages {
+        flex: 1 !important;
+        padding: 16px 20px !important;
+        gap: 16px !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: thin !important;
+        scrollbar-color: var(--accent-solid) transparent !important;
+      }
+
+      .chatbot-bubble {
+        padding: 16px 20px !important;
+        border-radius: 20px !important;
+        max-width: 85% !important;
+        font-size: 16px !important;
+        line-height: 1.6 !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+      }
+
+      .msg.bot .chatbot-bubble {
+        margin-right: 20px !important;
+        border-bottom-left-radius: 8px !important;
+      }
+
+      .msg.user .chatbot-bubble {
+        margin-left: 20px !important;
+        border-bottom-right-radius: 8px !important;
+      }
+
+      .input-row {
+        padding: 16px 20px !important;
+        background: var(--header-bg) !important;
+        border-top: 2px solid var(--border-color) !important;
+        position: sticky !important;
+        bottom: 0 !important;
+        min-height: 70px !important;
+      }
+
+      .input-row input {
+        padding: 16px 20px !important;
+        font-size: 16px !important;
+        border-radius: 25px !important;
+        background: var(--yuno-bg) !important;
+        border: 2px solid var(--border-color) !important;
+        min-height: 50px !important;
+        -webkit-appearance: none !important;
+        touch-action: manipulation !important;
+      }
+
+      .input-row input:focus {
+        border-color: var(--accent-solid) !important;
+        outline: none !important;
+        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2) !important;
+        transform: scale(1) !important;
+      }
+
+      .input-row button {
+        padding: 16px 24px !important;
+        font-size: 16px !important;
+        border-radius: 25px !important;
+        min-height: 50px !important;
+        min-width: 80px !important;
+        font-weight: 600 !important;
+        margin-left: 12px !important;
+        touch-action: manipulation !important;
+      }
+
+      .chatbox {
+        padding-top: env(safe-area-inset-top) !important;
+        padding-bottom: env(safe-area-inset-bottom) !important;
+      }
+
+      .input-row {
+        padding-bottom: calc(16px + env(safe-area-inset-bottom)) !important;
+      }
+    }
+
+    /* Mobile Animations */
+    @keyframes mobileSlideIn {
+      from { transform: translateY(100vh) !important; opacity: 0 !important; }
+      to { transform: translateY(0) !important; opacity: 1 !important; }
+    }
+
+    /* Prevent body scroll when mobile chat is open */
+    body.yuno-mobile-chat-open {
+      overflow: hidden !important;
+      position: fixed !important;
+      width: 100% !important;
+      height: 100% !important;
+    }
     </style>
 
     <div class="auth-error">Authentication failed. Please refresh the page.</div>
@@ -1033,6 +874,24 @@
       this._teaserShown = false;
     }
 
+        // Mobile body scroll prevention
+    _preventMobileBodyScroll(prevent = true) {
+      const isMobile = window.innerWidth <= 768;
+      if (isMobile) {
+        if (prevent) {
+          document.body.classList.add('yuno-mobile-chat-open');
+          const scrollY = window.scrollY;
+          document.body.style.top = `-${scrollY}px`;
+        } else {
+          document.body.classList.remove('yuno-mobile-chat-open');
+          const scrollY = document.body.style.top;
+          document.body.style.top = '';
+          window.scrollTo(0, parseInt(scrollY || '0') * -1);
+        }
+      }
+    }
+
+
     _toggleChat(open) {
       this._box.style.display = open ? 'flex' : 'none';
       if (!open) this._bubble.style.display = 'inline-flex';
@@ -1040,7 +899,15 @@
         this._addBotMessage(CONFIG.welcomeMessage);
         this._first = false;
       }
-      if (open) this._input.focus();
+      
+      // Mobile enhancements
+      this._preventMobileBodyScroll(open);
+      
+      // Only auto-focus input on desktop
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      if (open && !isMobile) {
+        this._input.focus();
+      }
     }
 
     _addBotMessage(text) {
@@ -1158,10 +1025,16 @@
         this._hideTyping();
         this._addBotMessage('Something went wrong. Please try again.');
         console.error('Yuno Error:', error);
+
       } finally {
         this._input.disabled = false;
         this._sendBtn.disabled = false;
-        this._input.focus();
+        
+        // Only auto-focus on desktop
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        if (!isMobile) {
+          this._input.focus();
+        }
       }
     }
   }
