@@ -12,6 +12,17 @@
     return SCRIPT_NAMES.some(name => s.src.includes(name)) || s.hasAttribute('site_id');
   }) || document.currentScript;
   
+   // — try data-attribute first, then query-param
+   let siteId = thisScript?.getAttribute('site_id') || null;
+   if (!siteId && thisScript?.src) {
+     try {
+       const url = new URL(thisScript.src, window.location.href);
+       siteId = url.searchParams.get('site_id');
+     } catch (e) {
+       console.error('Yuno: could not parse site_id from script src', e);
+     }
+   }
+
   console.log('🔍 Script detection:', {
     foundScript: !!thisScript,
     scriptSrc: thisScript?.src,
