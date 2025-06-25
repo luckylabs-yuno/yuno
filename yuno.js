@@ -865,7 +865,7 @@ _addToCart(product) {
         this._addBotMessage('⏳ Adding to cart...');
         
         // Call MCP update_cart tool
-        const cartResponse = await fetch(`${CONFIG.apiEndpoint}/mcp/cart/add`, {
+        const cartResponse = await fetch(`${CONFIG.apiEndpoint}/api/mcp`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
