@@ -59,8 +59,8 @@
     showTeaser: thisScript?.getAttribute('show_teaser') !== 'false',
     
     // Dimensions
-    width: thisScript?.getAttribute('width') || '400px',
-    height: thisScript?.getAttribute('height') || '540px',
+    width: thisScript?.getAttribute('width') || '440px',
+    height: thisScript?.getAttribute('height') || '660px',
     
     // Advanced
     borderRadius: thisScript?.getAttribute('border_radius') || '16px',
@@ -372,6 +372,7 @@
         box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 0 1px var(--border-color);
         overflow: hidden;
         animation: slideIn 0.5s ease-out;
+        min-width: 380px; /* Ensure minimum width */
       }
       .header {
         display: flex;
@@ -413,40 +414,47 @@
       .powered-by a:hover {
         text-decoration: underline;
       }
-
       .messages {
         flex: 1;
         overflow-y: auto;
-        padding: 12px;
+        padding: 16px; /* Increased from 12px */
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 16px; /* Increased from 12px */
         scrollbar-width: none;
         -ms-overflow-style: none;
       }
+
       .messages::-webkit-scrollbar {
         display: none;
       }
 
       /* Quick Replies - NEW FEATURE */
+
+    /* Update these CSS rules in the template */
       .quick-replies {
         display: flex;
         gap: 8px;
-        padding: 8px 12px 0;
+        padding: 8px 12px 8px;
         flex-wrap: wrap;
         justify-content: flex-start;
+        background: var(--header-bg);
+        border-bottom: 1px solid var(--border-color);
+        min-height: 40px; /* Ensure minimum height */
       }
       .quick-reply-btn {
         background: var(--yuno-bg);
         color: var(--text-color);
         border: 1px solid var(--border-color);
         border-radius: 16px;
-        padding: 6px 12px;
+        padding: 8px 12px;
         font-size: 13px;
         cursor: pointer;
         transition: all 0.2s ease;
         white-space: nowrap;
+        flex-shrink: 0;
       }
+
       .quick-reply-btn:hover {
         background: var(--accent);
         color: #ffffff;
@@ -560,9 +568,9 @@
       /* Product Carousel - NEW FEATURE */
       .product-carousel {
         display: flex;
-        gap: 12px;
+        gap: 16px; /* Increased from 12px */
         overflow-x: auto;
-        padding: 8px 0;
+        padding: 12px 0; /* Increased from 8px */
         scroll-snap-type: x mandatory;
         scrollbar-width: none;
         -ms-overflow-style: none;
@@ -808,7 +816,7 @@
       this._closeBox.addEventListener('click', () => this._toggleChat(false));
       this._sendBtn.addEventListener('click', () => this._send());
       this._input.addEventListener('keydown', e => e.key === 'Enter' && this._send());
-       this._setupQuickReplyAutoHide(); // ADD THIS LINE
+      this._setupQuickReplyAutoHide(); // ADD THIS LINE
     }
 
     _initializeWidget() {
@@ -834,6 +842,139 @@
       setTimeout(() => {
         this._authError.style.display = 'none';
       }, 5000);
+    }
+
+// Update the _addToCart method in yuno.js
+_addToCart(product) {
+  if (!product.id) {
+    console.error('Product ID missing for add to cart', product);
+    this._addBotMessage('❌ Product information is incomplete.');
+    return;
+  }
+  
+  console.log('Adding to cart with REAL Shopify API:', product);
+  
+  // Create cart via MCP API (preferred method)
+  this._addToCartViaMCP(product);
+}
+
+    // Add new method for MCP cart integration
+    async _addToCartViaMCP(product) {
+      try {
+        // Show loading state
+        this._addBotMessage('⏳ Adding to cart...');
+        
+        // Call MCP update_cart tool
+        const cartResponse = await fetch(`${CONFIG.apiEndpoint}/mcp/cart/add`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this._token}`
+          },
+          body: JSON.stringify({
+            site_id: CONFIG.siteId,
+            merchandise_id: product.id,  // This should be variant_id from the real API
+            quantity: 1,
+            product_title: product.title
+          })
+        });
+        
+        if (cartResponse.ok) {
+          const result = await cartResponse.json();
+          console.log('MCP add to cart success:', result);
+          
+          // Remove loading message
+          this._removeLastBotMessage();
+          
+          // Show success with cart info
+          if (result.checkout_url) {
+            this._addBotMessage(`✅ Added "${product.title}" to your cart! <a href="${result.checkout_url}" target="_blank">View Cart & Checkout</a>`);
+          } else {
+            this._addBotMessage(`✅ Added "${product.title}" to your cart!`);
+          }
+          
+          // Trigger cart update events
+          this._triggerCartUpdate();
+          
+        } else {
+          console.error('MCP add to cart failed:', cartResponse.status);
+          
+          // Remove loading message and try fallback
+          this._removeLastBotMessage();
+          this._addToCartViaNativeShopify(product);
+        }
+        
+      } catch (error) {
+        console.error('MCP add to cart error:', error);
+        
+        // Remove loading message and try fallback
+        this._removeLastBotMessage();
+        this._addToCartViaNativeShopify(product);
+      }
+    }
+
+    // Fallback to native Shopify cart API
+    async _addToCartViaNativeShopify(product) {
+      try {
+        console.log('Trying native Shopify cart API...');
+        
+        const response = await fetch('/cart/add.js', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            id: product.id,
+            quantity: 1,
+            properties: {
+              'Added by': 'Yuno Chat Assistant'
+            }
+          })
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          console.log('Native Shopify cart success:', result);
+          this._addBotMessage(`✅ Added "${product.title}" to your cart!`);
+          this._triggerCartUpdate();
+        } else {
+          const errorText = await response.text();
+          console.error('Native Shopify cart failed:', response.status, errorText);
+          
+          // Final fallback - navigate to product page
+          this._addBotMessage(`❌ Unable to add to cart automatically. <a href="${product.product_url || this._buildProductUrl(product)}" target="_blank">Click here to view the product and add it manually</a>.`);
+        }
+        
+      } catch (error) {
+        console.error('Native Shopify cart error:', error);
+        this._addBotMessage(`❌ Unable to add to cart. <a href="${product.product_url || this._buildProductUrl(product)}" target="_blank">Click here to view the product</a>.`);
+      }
+    }
+
+    // Helper method to remove the last bot message (for loading states)
+    _removeLastBotMessage() {
+      const messages = this._msgs.querySelectorAll('.msg.bot');
+      if (messages.length > 0) {
+        const lastMessage = messages[messages.length - 1];
+        lastMessage.remove();
+      }
+    }
+
+    // Update _buildProductUrl to use the real URL from API
+    _buildProductUrl(product) {
+      // First try the full URL from the API response
+      if (product.product_url) {
+        return product.product_url;
+      }
+      
+      // Fallback to constructing URL from handle
+      if (product.handle) {
+        const currentDomain = window.location.hostname;
+        return `https://${currentDomain}/products/${product.handle}`;
+      }
+      
+      return null;
     }
 
     _openChat() {
@@ -933,7 +1074,7 @@
       return div.innerHTML;
     }
 
-    // Create product carousel
+    // Update the _createProductCarousel method
     _createProductCarousel(products) {
       const carousel = document.createElement('div');
       carousel.className = 'product-carousel';
@@ -941,6 +1082,12 @@
       products.forEach(product => {
         const card = document.createElement('div');
         card.className = 'product-card';
+        
+        // Make the entire card clickable
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', () => {
+          this._navigateToProduct(product);
+        });
         
         const image = document.createElement('img');
         image.className = 'product-image';
@@ -975,7 +1122,10 @@
         button.disabled = product.available === false;
         
         if (product.available !== false) {
-          button.addEventListener('click', () => this._addToCart(product));
+          button.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent card click
+            this._addToCart(product);
+          });
         }
         
         card.appendChild(image);
@@ -986,6 +1136,36 @@
       });
       
       return carousel;
+    }
+
+    // Add navigation method
+    _navigateToProduct(product) {
+      const productUrl = this._buildProductUrl(product);
+      if (productUrl) {
+        window.open(productUrl, '_blank');
+      }
+    }
+
+    _buildProductUrl(product) {
+      // Try different URL construction methods
+      if (product.url) {
+        return product.url;
+      }
+      
+      if (product.handle) {
+        // Construct Shopify product URL
+        const currentDomain = window.location.hostname;
+        return `https://${currentDomain}/products/${product.handle}`;
+      }
+      
+      // Fallback: try to construct from current page
+      const currentUrl = window.location.href;
+      const baseUrl = currentUrl.split('/products/')[0];
+      if (product.handle) {
+        return `${baseUrl}/products/${product.handle}`;
+      }
+      
+      return null;
     }
 
     // Add to cart functionality
@@ -1045,14 +1225,25 @@
       this._send();
     }
 
-    // Hide quick replies when user starts typing
+
+    // Update the auto-hide method to be more gentle
     _setupQuickReplyAutoHide() {
+      this._input.addEventListener('focus', () => {
+        // Delay hiding to allow quick reply clicks
+        setTimeout(() => {
+          if (this._input.value.trim()) {
+            this._hideQuickReplies();
+          }
+        }, 200);
+      });
+      
       this._input.addEventListener('input', () => {
         if (this._input.value.trim()) {
           this._hideQuickReplies();
         }
       });
     }
+
 
     _addUserMessage(text) {
       const msg = document.createElement('div'); 
