@@ -1,4 +1,4 @@
-// yuno-secure.js - Enhanced security version
+// yuno-secure.js - Enhanced security version with Unified Message Contract support
 'use strict';
 
 (() => {
@@ -59,8 +59,8 @@
     showTeaser: thisScript?.getAttribute('show_teaser') !== 'false',
     
     // Dimensions
-    width: thisScript?.getAttribute('width') || '340px',
-    height: thisScript?.getAttribute('height') || '450px',
+    width: thisScript?.getAttribute('width') || '400px',
+    height: thisScript?.getAttribute('height') || '540px',
     
     // Advanced
     borderRadius: thisScript?.getAttribute('border_radius') || '16px',
@@ -159,7 +159,7 @@
     `;
   }
 
-  // Template with dynamic content and powered by message
+  // Template with dynamic content, powered by message, and new unified contract features
   const template = document.createElement('template');
   template.innerHTML = `
     <style>
@@ -427,6 +427,32 @@
       .messages::-webkit-scrollbar {
         display: none;
       }
+
+      /* Quick Replies - NEW FEATURE */
+      .quick-replies {
+        display: flex;
+        gap: 8px;
+        padding: 8px 12px 0;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+      }
+      .quick-reply-btn {
+        background: var(--yuno-bg);
+        color: var(--text-color);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 6px 12px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+      }
+      .quick-reply-btn:hover {
+        background: var(--accent);
+        color: #ffffff;
+        border-color: var(--accent-solid);
+      }
+
       .input-row {
         display: flex;
         border-top: 1px solid var(--border-color);
@@ -531,6 +557,85 @@
         hyphens: auto !important;
       }
 
+      /* Product Carousel - NEW FEATURE */
+      .product-carousel {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        padding: 8px 0;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+      .product-carousel::-webkit-scrollbar {
+        display: none;
+      }
+      .product-card {
+        min-width: 160px;
+        background: var(--yuno-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 12px;
+        scroll-snap-align: start;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .product-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      }
+      .product-image {
+        width: 120px;
+        height: 120px;
+        background: #f0f0f0;
+        border-radius: 8px;
+        object-fit: cover;
+        margin-bottom: 8px;
+      }
+      .product-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 4px;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .product-price {
+        font-size: 14px;
+        font-weight: bold;
+        color: var(--accent-solid);
+        margin-bottom: 8px;
+      }
+      .product-price .compare-price {
+        font-size: 12px;
+        color: var(--text-muted);
+        text-decoration: line-through;
+        margin-left: 4px;
+        font-weight: normal;
+      }
+      .add-to-cart-btn {
+        width: 100%;
+        background: var(--accent);
+        color: #ffffff;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 8px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s ease;
+      }
+      .add-to-cart-btn:hover {
+        background: var(--accent-hover);
+      }
+      .add-to-cart-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background: var(--text-muted);
+      }
+
       /* Typing indicator */
       .typing {
         display: inline-flex;
@@ -587,6 +692,7 @@
       <div class="header">${CONFIG.headerTitle} <button class="close-btn">×</button></div>
       <div class="powered-by">Powered by <a href="https://helloyuno.com" target="_blank">HelloYuno</a></div>
       <div class="messages"></div>
+      <div class="quick-replies" style="display: none;"></div>
       <div class="input-row">
         <input type="text" placeholder="${CONFIG.placeholder}" aria-label="${CONFIG.placeholder}" />
         <button>Send</button>
@@ -616,6 +722,7 @@
       this._input = root.querySelector('input');
       this._sendBtn = root.querySelector('.input-row button');
       this._authError = root.querySelector('.auth-error');
+      this._quickReplies = root.querySelector('.quick-replies');
       
       // State
       this._history = [{ role: 'system', content: 'You are Yuno, a friendly assistant.' }];
@@ -755,16 +862,195 @@
       if (open) this._input.focus();
     }
 
-    _addBotMessage(text) {
+    // Enhanced message rendering with unified contract support
+    _addBotMessage(content, messageData = null) {
       const msg = document.createElement('div'); 
       msg.className = 'msg bot';
-      const bubble = document.createElement('div'); 
-      bubble.className = 'chatbot-bubble';
-      bubble.textContent = text;
-      msg.appendChild(bubble);
+      
+      // Support both legacy string content and new unified contract
+      if (typeof content === 'string') {
+        // Legacy format - just text
+        const bubble = document.createElement('div'); 
+        bubble.className = 'chatbot-bubble';
+        bubble.textContent = content;
+        msg.appendChild(bubble);
+        this._history.push({ role: 'assistant', content: content });
+      } else if (messageData && messageData.content) {
+        // New unified contract format
+        const bubble = document.createElement('div'); 
+        bubble.className = 'chatbot-bubble';
+        
+        // Sanitize and render HTML content
+        bubble.innerHTML = this._sanitizeHTML(messageData.content);
+        msg.appendChild(bubble);
+        
+        // Add product carousel if present
+        if (messageData.product_carousel && messageData.product_carousel.length > 0) {
+          const carousel = this._createProductCarousel(messageData.product_carousel);
+          msg.appendChild(carousel);
+        }
+        
+        this._history.push({ role: 'assistant', content: messageData.content });
+      }
+      
       this._msgs.appendChild(msg);
       this._msgs.scrollTop = this._msgs.scrollHeight;
-      this._history.push({ role: 'assistant', content: text });
+      
+      // Handle quick replies
+      if (messageData && messageData.quick_replies && messageData.quick_replies.length > 0) {
+        this._showQuickReplies(messageData.quick_replies);
+      } else {
+        this._hideQuickReplies();
+      }
+      
+      // Handle follow-up
+      if (messageData && messageData.follow_up && messageData.follow_up.need && messageData.follow_up.prompt) {
+        setTimeout(() => {
+          this._addBotMessage(messageData.follow_up.prompt);
+        }, 400);
+      }
+    }
+
+    // HTML sanitizer for rich content
+    _sanitizeHTML(html) {
+      const allowedTags = ['b', 'i', 'u', 'a', 'ul', 'li', 'br'];
+      const div = document.createElement('div');
+      div.innerHTML = html;
+      
+      // Remove any script tags or dangerous elements
+      const scripts = div.querySelectorAll('script');
+      scripts.forEach(script => script.remove());
+      
+      // Only allow specific tags
+      const allElements = div.querySelectorAll('*');
+      allElements.forEach(el => {
+        if (!allowedTags.includes(el.tagName.toLowerCase())) {
+          el.replaceWith(document.createTextNode(el.textContent));
+        }
+      });
+      
+      return div.innerHTML;
+    }
+
+    // Create product carousel
+    _createProductCarousel(products) {
+      const carousel = document.createElement('div');
+      carousel.className = 'product-carousel';
+      
+      products.forEach(product => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        
+        const image = document.createElement('img');
+        image.className = 'product-image';
+        image.src = product.image || '';
+        image.alt = product.title || 'Product';
+        image.onerror = () => {
+          image.style.background = '#f0f0f0';
+          image.style.display = 'flex';
+          image.style.alignItems = 'center';
+          image.style.justifyContent = 'center';
+          image.innerHTML = '📦';
+        };
+        
+        const title = document.createElement('div');
+        title.className = 'product-title';
+        title.textContent = product.title || 'Product';
+        
+        const priceContainer = document.createElement('div');
+        priceContainer.className = 'product-price';
+        priceContainer.textContent = product.price || '';
+        
+        if (product.compare_at_price) {
+          const comparePrice = document.createElement('span');
+          comparePrice.className = 'compare-price';
+          comparePrice.textContent = product.compare_at_price;
+          priceContainer.appendChild(comparePrice);
+        }
+        
+        const button = document.createElement('button');
+        button.className = 'add-to-cart-btn';
+        button.textContent = product.available !== false ? 'Add to Cart' : 'Out of Stock';
+        button.disabled = product.available === false;
+        
+        if (product.available !== false) {
+          button.addEventListener('click', () => this._addToCart(product));
+        }
+        
+        card.appendChild(image);
+        card.appendChild(title);
+        card.appendChild(priceContainer);
+        card.appendChild(button);
+        carousel.appendChild(card);
+      });
+      
+      return carousel;
+    }
+
+    // Add to cart functionality
+    _addToCart(product) {
+      if (!product.id) {
+        console.error('Product ID missing for add to cart');
+        return;
+      }
+      
+      // For Shopify integration
+      fetch('/cart/add.js', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: product.id,
+          quantity: 1
+        })
+      }).then(response => {
+        if (response.ok) {
+          // Show success feedback
+          this._addBotMessage(`✅ Added "${product.title}" to your cart!`);
+        } else {
+          this._addBotMessage('❌ Sorry, there was an issue adding that to your cart.');
+        }
+      }).catch(error => {
+        console.error('Add to cart error:', error);
+        this._addBotMessage('❌ Sorry, there was an issue adding that to your cart.');
+      });
+    }
+
+    // Quick replies functionality
+    _showQuickReplies(replies) {
+      this._quickReplies.innerHTML = '';
+      this._quickReplies.style.display = 'flex';
+      
+      replies.forEach(reply => {
+        const btn = document.createElement('button');
+        btn.className = 'quick-reply-btn';
+        btn.textContent = reply;
+        btn.addEventListener('click', () => {
+          this._sendQuickReply(reply);
+        });
+        this._quickReplies.appendChild(btn);
+      });
+    }
+
+    _hideQuickReplies() {
+      this._quickReplies.style.display = 'none';
+      this._quickReplies.innerHTML = '';
+    }
+
+    _sendQuickReply(text) {
+      this._hideQuickReplies();
+      this._input.value = text;
+      this._send();
+    }
+
+    // Hide quick replies when user starts typing
+    _setupQuickReplyAutoHide() {
+      this._input.addEventListener('input', () => {
+        if (this._input.value.trim()) {
+          this._hideQuickReplies();
+        }
+      });
     }
 
     _addUserMessage(text) {
@@ -805,6 +1091,9 @@
     async _send() {
       const text = this._input.value.trim();
       if (!text) return;
+
+      // Hide quick replies when sending
+      this._hideQuickReplies();
 
       // Disable input during request
       this._input.disabled = true;
@@ -862,7 +1151,16 @@
           throw new Error(`HTTP ${response.status}`);
         } else {
           const data = await response.json();
-          this._addBotMessage(data.content || "Sorry, I couldn't find anything.");
+          
+          // Handle both legacy and unified contract responses
+          if (data.content || data.product_carousel || data.quick_replies) {
+            // New unified contract format
+            this._addBotMessage(null, data);
+          } else {
+            // Legacy format fallback
+            this._addBotMessage(data.content || "Sorry, I couldn't find anything.");
+          }
+          
           this._retryCount = 0; // Reset retry count on success
         }
         
@@ -905,7 +1203,7 @@
       widget.setAttribute('theme', CONFIG.theme);
       document.body.appendChild(widget);
       
-      console.log('✅ Yuno: Widget initialized successfully');
+      console.log('✅ Yuno: Widget initialized successfully with unified contract support');
       
     } catch (error) {
       console.error('🚨 Yuno: Widget initialization failed:', error);
