@@ -808,6 +808,7 @@
       this._closeBox.addEventListener('click', () => this._toggleChat(false));
       this._sendBtn.addEventListener('click', () => this._send());
       this._input.addEventListener('keydown', e => e.key === 'Enter' && this._send());
+       this._setupQuickReplyAutoHide(); // ADD THIS LINE
     }
 
     _initializeWidget() {
@@ -904,9 +905,9 @@
       }
       
       // Handle follow-up
-      if (messageData && messageData.follow_up && messageData.follow_up.need && messageData.follow_up.prompt) {
+      if (messageData && messageData.follow_up && messageData.follow_up_prompt) {
         setTimeout(() => {
-          this._addBotMessage(messageData.follow_up.prompt);
+          this._addBotMessage(messageData.follow_up_prompt);
         }, 400);
       }
     }
