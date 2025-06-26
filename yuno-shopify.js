@@ -59,8 +59,8 @@
     showTeaser: thisScript?.getAttribute('show_teaser') !== 'false',
     
     // Dimensions
-    width: thisScript?.getAttribute('width') || '440px',
-    height: thisScript?.getAttribute('height') || '660px',
+    width: thisScript?.getAttribute('width') || '400px',
+    height: thisScript?.getAttribute('height') || '700px',
     
     // Advanced
     borderRadius: thisScript?.getAttribute('border_radius') || '16px',
@@ -844,113 +844,107 @@
       }, 5000);
     }
 
-// Update the _addToCart method in yuno.js
-_addToCart(product) {
-  if (!product.id) {
-    console.error('Product ID missing for add to cart', product);
-    this._addBotMessage('❌ Product information is incomplete.');
-    return;
+  // Replace the existing _addToCart method
+  _addToCart(product) {
+    if (!product.id) {
+      console.error('🛒 Product ID missing for add to cart', product);
+      this._addBotMessage('❌ Product information is incomplete.');
+      return;
+    }
+    
+    console.log('🛒 Adding to cart:', product);
+    this._updateCart(product.id, 1, product.title);
   }
-  
-  console.log('Adding to cart with REAL Shopify API:', product);
-  
-  // Create cart via MCP API (preferred method)
-  this._addToCartViaMCP(product);
-}
 
-    // Add new method for MCP cart integration
-    async _addToCartViaMCP(product) {
-      try {
-        // Show loading state
-        this._addBotMessage('⏳ Adding to cart...');
-        
-        // Call MCP update_cart tool
-        const cartResponse = await fetch(`${CONFIG.apiEndpoint}/api/mcp`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this._token}`
-          },
-          body: JSON.stringify({
-            site_id: CONFIG.siteId,
-            merchandise_id: product.id,  // This should be variant_id from the real API
-            quantity: 1,
-            product_title: product.title
-          })
-        });
-        
-        if (cartResponse.ok) {
-          const result = await cartResponse.json();
-          console.log('MCP add to cart success:', result);
-          
-          // Remove loading message
-          this._removeLastBotMessage();
-          
-          // Show success with cart info
-          if (result.checkout_url) {
-            this._addBotMessage(`✅ Added "${product.title}" to your cart! <a href="${result.checkout_url}" target="_blank">View Cart & Checkout</a>`);
-          } else {
-            this._addBotMessage(`✅ Added "${product.title}" to your cart!`);
-          }
-          
-          // Trigger cart update events
-          this._triggerCartUpdate();
-          
-        } else {
-          console.error('MCP add to cart failed:', cartResponse.status);
-          
-          // Remove loading message and try fallback
-          this._removeLastBotMessage();
-          this._addToCartViaNativeShopify(product);
-        }
-        
-      } catch (error) {
-        console.error('MCP add to cart error:', error);
-        
-        // Remove loading message and try fallback
+  // Add this new method
+  async _updateCart(merchandise_id, quantity, productTitle = '') {
+    try {
+      // Show loading state
+      const action = quantity > 0 ? 'Adding to' : 'Removing from';
+      this._addBotMessage(`⏳ ${action} cart...`);
+      
+      // Ensure we have a valid token
+      const token = await this._ensureValidToken();
+      if (!token) {
         this._removeLastBotMessage();
-        this._addToCartViaNativeShopify(product);
+        this._addBotMessage('❌ Authentication failed. Please refresh the page.');
+        return;
       }
-    }
-
-    // Fallback to native Shopify cart API
-    async _addToCartViaNativeShopify(product) {
-      try {
-        console.log('Trying native Shopify cart API...');
+      
+      // Call our cart endpoint (uses same MCP service as product search)
+      const cartResponse = await fetch(`${CONFIG.apiEndpoint}/shopify/cart/add`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          merchandise_id: merchandise_id,
+          quantity: quantity
+        })
+      });
+      
+      console.log('🛒 Cart Response Status:', cartResponse.status);
+      
+      if (cartResponse.ok) {
+        const result = await cartResponse.json();
+        console.log('🛒 Cart Success:', result);
         
-        const response = await fetch('/cart/add.js', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({
-            id: product.id,
-            quantity: 1,
-            properties: {
-              'Added by': 'Yuno Chat Assistant'
-            }
-          })
-        });
+        // Remove loading message
+        this._removeLastBotMessage();
         
-        if (response.ok) {
-          const result = await response.json();
-          console.log('Native Shopify cart success:', result);
-          this._addBotMessage(`✅ Added "${product.title}" to your cart!`);
-          this._triggerCartUpdate();
+        // Show success message based on quantity
+        if (quantity > 0) {
+          // Added to cart
+          if (result.checkout_url) {
+            this._addBotMessage(`✅ Added "${productTitle}" to your cart!<br><br><a href="${result.checkout_url}" target="_blank" style="background: var(--accent); color: #fff; padding: 10px 16px; border-radius: 8px; text-decoration: none; display: inline-block; font-weight: 600; margin-top: 8px;">🛒 View Cart & Checkout</a>`);
+          } else {
+            this._addBotMessage(`✅ Added "${productTitle}" to your cart!`);
+          }
         } else {
-          const errorText = await response.text();
-          console.error('Native Shopify cart failed:', response.status, errorText);
-          
-          // Final fallback - navigate to product page
-          this._addBotMessage(`❌ Unable to add to cart automatically. <a href="${product.product_url || this._buildProductUrl(product)}" target="_blank">Click here to view the product and add it manually</a>.`);
+          // Removed from cart
+          this._addBotMessage(`✅ Removed "${productTitle}" from your cart!`);
         }
         
-      } catch (error) {
-        console.error('Native Shopify cart error:', error);
-        this._addBotMessage(`❌ Unable to add to cart. <a href="${product.product_url || this._buildProductUrl(product)}" target="_blank">Click here to view the product</a>.`);
+        // Trigger cart update events for Shopify theme
+        this._triggerCartUpdate();
+        
+      } else {
+        // Handle error response
+        const errorData = await cartResponse.json().catch(() => ({}));
+        console.error('🛒 Cart Failed:', cartResponse.status, errorData);
+        
+        this._removeLastBotMessage();
+        
+        const errorMsg = errorData.message || 'Unable to update cart';
+        this._addBotMessage(`❌ ${errorMsg}`);
       }
+      
+    } catch (error) {
+      console.error('🛒 Cart Error:', error);
+      this._removeLastBotMessage();
+      this._addBotMessage('❌ Unable to update cart. Please try again.');
     }
+  }
+
+  // Add this helper method
+  _triggerCartUpdate() {
+    try {
+      // Standard Shopify cart events
+      window.dispatchEvent(new CustomEvent('cart:updated'));
+      window.dispatchEvent(new CustomEvent('cart:build'));
+      
+      // Dawn theme and other modern themes
+      if (window.CartDrawer && window.CartDrawer.renderContents) {
+        window.CartDrawer.renderContents();
+      }
+      
+      console.log('🛒 Cart update events triggered');
+      
+    } catch (error) {
+      console.log('🛒 Theme cart update failed:', error);
+    }
+  }
 
     // Helper method to remove the last bot message (for loading states)
     _removeLastBotMessage() {
