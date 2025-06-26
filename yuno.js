@@ -1,8 +1,9 @@
+// yuno-modular.js
 'use strict';
 
 (() => {
   // Better script detection - look for multiple possible names
-  const SCRIPT_NAMES = ['yuno.js', 'yuno-secure.js', 'widget.js', 'yuno-modular.js'];
+  const SCRIPT_NAMES = ['yuno.js', 'widget.js', 'yuno-modular.js'];
   const allScripts = Array.from(document.getElementsByTagName('script'));
   
   // Find the current script by checking multiple patterns
@@ -20,12 +21,12 @@
   // Configuration from script attributes with fallbacks
   const CONFIG = {
     // Core settings
-    siteId: thisScript?.getAttribute('site_id') || null,
-    apiEndpoint: thisScript?.getAttribute('api_endpoint') || 'https://api.helloyuno.com',
+    siteId: thisScript?.getAttribute('site_id') || 'default_site',
+    apiEndpoint: thisScript?.getAttribute('api_endpoint') || 'https://luckylabs.pythonanywhere.com/ask',
     
     // Appearance
     theme: thisScript?.getAttribute('theme') || 'dark',
-    position: thisScript?.getAttribute('position') || 'bottom-right',
+    position: thisScript?.getAttribute('position') || 'bottom-right', // bottom-right, bottom-left, top-right, top-left
     
     // Colors (can override theme defaults)
     primaryColor: thisScript?.getAttribute('primary_color') || null,
@@ -42,9 +43,9 @@
     placeholder: thisScript?.getAttribute('placeholder') || "Type your message…",
     
     // Behavior
-    autoShow: thisScript?.getAttribute('auto_show') !== 'false',
+    autoShow: thisScript?.getAttribute('auto_show') !== 'false', // default true
     autoShowDelay: parseInt(thisScript?.getAttribute('auto_show_delay') || '1000', 10),
-    showTeaser: thisScript?.getAttribute('show_teaser') !== 'false',
+    showTeaser: thisScript?.getAttribute('show_teaser') !== 'false', // default true
     
     // Dimensions
     width: thisScript?.getAttribute('width') || '340px',
@@ -52,15 +53,9 @@
     
     // Advanced
     borderRadius: thisScript?.getAttribute('border_radius') || '16px',
-    blurEffect: thisScript?.getAttribute('blur_effect') !== 'false',
-    animation: thisScript?.getAttribute('animation') || 'slide',
+    blurEffect: thisScript?.getAttribute('blur_effect') !== 'false', // default true
+    animation: thisScript?.getAttribute('animation') || 'slide', // slide, fade, scale
   };
-
-  // Validate required configuration
-  if (!CONFIG.siteId) {
-    console.error('Yuno: site_id is required. Widget will not load.');
-    return;
-  }
 
   // Debug configuration
   console.log('🎨 Yuno Config:', CONFIG);
@@ -81,7 +76,7 @@
     localStorage.setItem('yuno_user_id', user_id);
   }
 
-  // Generate dynamic CSS based on config
+  // Generate dynamic CSS based on config - FIXED COLOR OVERRIDE LOGIC
   function generateDynamicCSS() {
     const position = CONFIG.position.split('-');
     const vertical = position[0]; // top or bottom
@@ -238,21 +233,6 @@
       /* Dynamic CSS will be injected here */
       ${generateDynamicCSS()}
 
-      /* Authentication failure message */
-      .auth-error {
-        display: none;
-        position: fixed;
-        bottom: 40px;
-        right: 40px;
-        background: #ff4444;
-        color: white;
-        padding: 12px 16px;
-        border-radius: 8px;
-        font-size: 14px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        z-index: 10000;
-      }
-
       /* Trigger pill */
       .bubble {
         display: inline-flex;
@@ -384,7 +364,7 @@
         color: var(--close-hover-color);
       }
 
-      /* Powered by Yuno message */
+      /* NEW: Powered by Yuno message */
       .powered-by {
         padding: 6px 12px;
         text-align: center;
@@ -444,10 +424,6 @@
       }
       .input-row button:hover {
         background: var(--accent-hover);
-      }
-      .input-row button:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
       }
 
       /* Bot & User bubbles */
@@ -561,7 +537,6 @@
       .teaser.hide { display: none !important; }
     </style>
 
-    <div class="auth-error">Authentication failed. Please refresh the page.</div>
     <div class="bubble">
       <span class="icon">${CONFIG.triggerIcon}</span>
       <span>${CONFIG.triggerText}</span>
@@ -592,8 +567,6 @@
       super();
       const root = this.attachShadow({ mode: 'open' });
       root.appendChild(template.content.cloneNode(true));
-      
-      // Widget elements
       this._bubble = root.querySelector('.bubble');
       this._teaser = root.querySelector('.teaser');
       this._closeTeaser = root.querySelector('.teaser .close');
@@ -603,95 +576,17 @@
       this._msgs = root.querySelector('.messages');
       this._input = root.querySelector('input');
       this._sendBtn = root.querySelector('.input-row button');
-      this._authError = root.querySelector('.auth-error');
-      
-      // State
       this._history = [{ role: 'system', content: 'You are Yuno, a friendly assistant.' }];
       this._first = true;
       this._teaserShown = false;
-      this._token = null;
-      this._tokenExpiry = null;
-      this._retryCount = 0;
-      this._maxRetries = 2;
-      this._authenticated = false;
     }
 
-    async connectedCallback() {
+    connectedCallback() {
       // Apply initial theme
       if (!this.hasAttribute('theme')) {
         this.setAttribute('theme', CONFIG.theme);
       }
 
-      // Authenticate widget before showing
-      try {
-        await this._authenticateWidget();
-        this._setupEventListeners();
-        this._initializeWidget();
-      } catch (error) {
-        console.error('Yuno: Failed to authenticate widget', error);
-        this._showAuthError();
-      }
-    }
-
-    async _authenticateWidget() {
-      try {
-        const response = await fetch(`${CONFIG.apiEndpoint}/widget/authenticate`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            site_id: CONFIG.siteId,
-            domain: window.location.hostname,
-            nonce: crypto.randomUUID(),
-            timestamp: Date.now()
-          })
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(`Authentication failed: ${response.status} - ${errorData.message || 'Unknown error'}`);
-        }
-
-        const data = await response.json();
-        this._token = data.token;
-        this._tokenExpiry = Date.now() + (data.expires_in * 1000) - 60000; // 1min buffer
-        this._rateLimits = data.rate_limits;
-        this._authenticated = true;
-        
-        console.log('🔐 Yuno: Authentication successful');
-        return true;
-      } catch (error) {
-        console.error('🚨 Yuno: Authentication failed:', error);
-        throw error;
-      }
-    }
-
-    async _ensureValidToken() {
-      // Check if token exists and is not expired
-      if (this._token && this._tokenExpiry > Date.now()) {
-        return this._token;
-      }
-
-      // Try to authenticate again
-      try {
-        await this._authenticateWidget();
-        return this._token;
-      } catch (error) {
-        console.error('Yuno: Token refresh failed', error);
-        this._showAuthError();
-        return null;
-      }
-    }
-
-    _setupEventListeners() {
-      this._bubble.addEventListener('click', () => this._openChat());
-      this._closeTeaser.addEventListener('click', () => this._hideTeaser());
-      this._askTeaser.addEventListener('click', () => this._openChat());
-      this._closeBox.addEventListener('click', () => this._toggleChat(false));
-      this._sendBtn.addEventListener('click', () => this._send());
-      this._input.addEventListener('keydown', e => e.key === 'Enter' && this._send());
-    }
-
-    _initializeWidget() {
       // Auto-show teaser based on config
       if (CONFIG.autoShow && CONFIG.showTeaser) {
         setTimeout(() => {
@@ -702,26 +597,16 @@
           }
         }, CONFIG.autoShowDelay);
       }
-    }
 
-    _showAuthError() {
-      this._authError.style.display = 'block';
-      this._bubble.style.display = 'none';
-      this._teaser.style.display = 'none';
-      this._box.style.display = 'none';
-      
-      // Hide error after 5 seconds
-      setTimeout(() => {
-        this._authError.style.display = 'none';
-      }, 5000);
+      this._bubble.addEventListener('click', () => this._openChat());
+      this._closeTeaser.addEventListener('click', () => this._hideTeaser());
+      this._askTeaser.addEventListener('click', () => this._openChat());
+      this._closeBox.addEventListener('click', () => this._toggleChat(false));
+      this._sendBtn.addEventListener('click', () => this._send());
+      this._input.addEventListener('keydown', e => e.key === 'Enter' && this._send());
     }
 
     _openChat() {
-      if (!this._authenticated) {
-        this._showAuthError();
-        return;
-      }
-      
       this._teaser.style.display = 'none';
       this._bubble.style.display = 'none';
       this._toggleChat(true);
@@ -744,10 +629,8 @@
     }
 
     _addBotMessage(text) {
-      const msg = document.createElement('div'); 
-      msg.className = 'msg bot';
-      const bubble = document.createElement('div'); 
-      bubble.className = 'chatbot-bubble';
+      const msg = document.createElement('div'); msg.className = 'msg bot';
+      const bubble = document.createElement('div'); bubble.className = 'chatbot-bubble';
       bubble.textContent = text;
       msg.appendChild(bubble);
       this._msgs.appendChild(msg);
@@ -756,10 +639,8 @@
     }
 
     _addUserMessage(text) {
-      const msg = document.createElement('div'); 
-      msg.className = 'msg user';
-      const bubble = document.createElement('div'); 
-      bubble.className = 'chatbot-bubble';
+      const msg = document.createElement('div'); msg.className = 'msg user';
+      const bubble = document.createElement('div'); bubble.className = 'chatbot-bubble';
       bubble.textContent = text;
       msg.appendChild(bubble);
       this._msgs.appendChild(msg);
@@ -767,12 +648,14 @@
       this._history.push({ role: 'user', content: text });
     }
 
-    _showTyping() {
-      const tip = document.createElement('div'); 
-      tip.className = 'msg bot';
-      tip.id = 'typing-indicator';
-      const typing = document.createElement('div'); 
-      typing.className = 'chatbot-bubble typing';
+    async _send() {
+      const text = this._input.value.trim();
+      if (!text) return;
+      this._addUserMessage(text);
+      this._input.value = '';
+
+      const tip = document.createElement('div'); tip.className = 'msg bot';
+      const typing = document.createElement('div'); typing.className = 'chatbot-bubble typing';
       for (let i = 0; i < 4; i++) {
         const dot = document.createElement('span');
         dot.className = 'dot';
@@ -781,129 +664,35 @@
       tip.appendChild(typing);
       this._msgs.appendChild(tip);
       this._msgs.scrollTop = this._msgs.scrollHeight;
-    }
-
-    _hideTyping() {
-      const typingIndicator = this._msgs.querySelector('#typing-indicator');
-      if (typingIndicator) {
-        typingIndicator.remove();
-      }
-    }
-
-    async _send() {
-      const text = this._input.value.trim();
-      if (!text) return;
-
-      // Disable input during request
-      this._input.disabled = true;
-      this._sendBtn.disabled = true;
-
-      // Ensure we have a valid token
-      const token = await this._ensureValidToken();
-      if (!token) {
-        this._addBotMessage('Authentication failed. Please refresh the page.');
-        this._input.disabled = false;
-        this._sendBtn.disabled = false;
-        return;
-      }
-
-      this._addUserMessage(text);
-      this._input.value = '';
-      this._showTyping();
 
       try {
-        const response = await fetch(`${CONFIG.apiEndpoint}/ask`, {
+        const res = await fetch(CONFIG.apiEndpoint, {
           method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             site_id: CONFIG.siteId,
-            page_url: window.location.href,
             session_id,
             user_id,
+            page_url: window.location.href,
             messages: this._history
           })
         });
-
-        this._hideTyping();
-
-        if (response.status === 401) {
-          // Token expired, retry once with new token
-          this._token = null;
-          if (this._retryCount < this._maxRetries) {
-            this._retryCount++;
-            this._input.value = text; // Restore message
-            this._history.pop(); // Remove the user message we just added
-            this._msgs.removeChild(this._msgs.lastChild); // Remove user bubble
-            await this._send();
-            return;
-          } else {
-            this._addBotMessage('Session expired. Please refresh the page.');
-          }
-        } else if (response.status === 429) {
-          this._addBotMessage('Too many requests. Please wait a moment before trying again.');
-        } else if (response.status === 403) {
-          this._addBotMessage('Access denied. Please contact support.');
-        } else if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        } else {
-          const data = await response.json();
-          this._addBotMessage(data.content || "Sorry, I couldn't find anything.");
-          this._retryCount = 0; // Reset retry count on success
-        }
-        
-      } catch (error) {
-        this._hideTyping();
-        this._addBotMessage('Something went wrong. Please try again.');
-        console.error('Yuno Error:', error);
-      } finally {
-        this._input.disabled = false;
-        this._sendBtn.disabled = false;
-        this._input.focus();
+        const data = await res.json();
+        tip.remove();
+        this._addBotMessage(data.content || "Sorry, I couldn't find anything.");
+      } catch (err) {
+        tip.remove();
+        this._addBotMessage('Oops, something went wrong.');
+        console.error('Yuno Error:', err);
       }
     }
   }
 
-  // Widget initialization with authentication check
-  async function initializeYunoWidget() {
-    try {
-      // Pre-authenticate before creating widget element
-      const response = await fetch(`${CONFIG.apiEndpoint}/widget/authenticate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          site_id: CONFIG.siteId,
-          domain: window.location.hostname,
-          nonce: crypto.randomUUID(),
-          timestamp: Date.now()
-        })
-      });
+  customElements.define('yuno-chat', YunoChat);
 
-      if (!response.ok) {
-        console.error(`Yuno: Widget not authorized for this domain (${response.status})`);
-        return;
-      }
-
-      // Only create widget if authentication succeeds
-      customElements.define('yuno-chat', YunoChat);
-
-      const widget = document.createElement('yuno-chat');
-      widget.setAttribute('theme', CONFIG.theme);
-      document.body.appendChild(widget);
-      
-      console.log('✅ Yuno: Widget initialized successfully');
-      
-    } catch (error) {
-      console.error('🚨 Yuno: Widget initialization failed:', error);
-    }
-  }
-
-  // Initialize when DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeYunoWidget);
-  } else {
-    initializeYunoWidget();
-  }
+  document.addEventListener('DOMContentLoaded', () => {
+    const widget = document.createElement('yuno-chat');
+    widget.setAttribute('theme', CONFIG.theme);
+    document.body.appendChild(widget);
+  });
 })();
