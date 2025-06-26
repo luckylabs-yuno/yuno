@@ -1305,7 +1305,7 @@ _addToCart(product) {
       this._showTyping();
 
       try {
-        const response = await fetch(`${CONFIG.apiEndpoint}/ask`, {
+        const response = await fetch(`${CONFIG.apiEndpoint}/shopify/ask`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -1344,15 +1344,14 @@ _addToCart(product) {
         } else {
           const data = await response.json();
           
-          // Handle both legacy and unified contract responses
+
           if (data.content || data.product_carousel || data.quick_replies) {
-            // New unified contract format
             this._addBotMessage(null, data);
           } else {
-            // Legacy format fallback
-            this._addBotMessage(data.content || "Sorry, I couldn't find anything.");
+            // Fallback
+            this._addBotMessage(data.content || "I'm here to help!");
           }
-          
+
           this._retryCount = 0; // Reset retry count on success
         }
         
