@@ -844,18 +844,6 @@
       }, 5000);
     }
 
-  // Replace the existing _addToCart method
-  _addToCart(product) {
-    if (!product.id) {
-      console.error('🛒 Product ID missing for add to cart', product);
-      this._addBotMessage('❌ Product information is incomplete.');
-      return;
-    }
-    
-    console.log('🛒 Adding to cart:', product);
-    this._updateCart(product.id, 1, product.title);
-  }
-
   // Add this new method
   async _updateCart(merchandise_id, quantity, productTitle = '') {
     try {
@@ -1077,10 +1065,13 @@
         const card = document.createElement('div');
         card.className = 'product-card';
         
-        // Make the entire card clickable
+        // Make the entire card clickable for product page
         card.style.cursor = 'pointer';
-        card.addEventListener('click', () => {
-          this._navigateToProduct(product);
+        card.addEventListener('click', (e) => {
+          // Only navigate if not clicking the add to cart button
+          if (!e.target.classList.contains('add-to-cart-btn')) {
+            this._navigateToProduct(product);
+          }
         });
         
         const image = document.createElement('img');
@@ -1117,8 +1108,8 @@
         
         if (product.available !== false) {
           button.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent card click
-            this._addToCart(product);
+            e.stopPropagation(); // Prevent card click (product navigation)
+            this._addToCart(product);  // Use variant_id for cart
           });
         }
         
@@ -1132,65 +1123,46 @@
       return carousel;
     }
 
-    // Add navigation method
+    // Update the _navigateToProduct method to use product URL
     _navigateToProduct(product) {
-      const productUrl = this._buildProductUrl(product);
+      let productUrl = null;
+      
+      // Try direct URL first (best option)
+      if (product.url) {
+        productUrl = product.url;
+      }
+      // Fallback to constructing URL from handle
+      else if (product.handle) {
+        const currentDomain = window.location.hostname;
+        productUrl = `https://${currentDomain}/products/${product.handle}`;
+      }
+      // Last resort: construct from product ID
+      else if (product.id && product.id.includes('gid://shopify/Product/')) {
+        const productNumericId = product.id.split('Product/')[1];
+        const currentDomain = window.location.hostname;
+        productUrl = `https://${currentDomain}/products/${productNumericId}`;
+      }
+      
       if (productUrl) {
         window.open(productUrl, '_blank');
+        console.log('🔗 Navigating to product:', productUrl);
+      } else {
+        console.error('🔗 Could not determine product URL for:', product);
       }
     }
 
-    _buildProductUrl(product) {
-      // Try different URL construction methods
-      if (product.url) {
-        return product.url;
-      }
-      
-      if (product.handle) {
-        // Construct Shopify product URL
-        const currentDomain = window.location.hostname;
-        return `https://${currentDomain}/products/${product.handle}`;
-      }
-      
-      // Fallback: try to construct from current page
-      const currentUrl = window.location.href;
-      const baseUrl = currentUrl.split('/products/')[0];
-      if (product.handle) {
-        return `${baseUrl}/products/${product.handle}`;
-      }
-      
-      return null;
-    }
-
-    // Add to cart functionality
+    // Update the _addToCart method to use variant_id
     _addToCart(product) {
-      if (!product.id) {
-        console.error('Product ID missing for add to cart');
+      if (!product.variant_id) {
+        console.error('🛒 Variant ID missing for add to cart', product);
+        this._addBotMessage('❌ Product variant information is incomplete.');
         return;
       }
       
-      // For Shopify integration
-      fetch('/cart/add.js', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: product.id,
-          quantity: 1
-        })
-      }).then(response => {
-        if (response.ok) {
-          // Show success feedback
-          this._addBotMessage(`✅ Added "${product.title}" to your cart!`);
-        } else {
-          this._addBotMessage('❌ Sorry, there was an issue adding that to your cart.');
-        }
-      }).catch(error => {
-        console.error('Add to cart error:', error);
-        this._addBotMessage('❌ Sorry, there was an issue adding that to your cart.');
-      });
+      console.log('🛒 Adding to cart with variant ID:', product.variant_id);
+      this._updateCart(product.variant_id, 1, product.title);  // Use variant_id for cart
     }
+
 
     // Quick replies functionality
     _showQuickReplies(replies) {
