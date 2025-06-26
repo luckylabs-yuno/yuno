@@ -860,14 +860,15 @@
       }
       
       // Call our cart endpoint (uses same MCP service as product search)
-      const cartResponse = await fetch(`${CONFIG.apiEndpoint}/shopify/cart/add`, {
+      const currentDomain = window.location.hostname;
+      const cartResponse = await fetch(`https://bombayshavingcompany.com/cart/add`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          merchandise_id: merchandise_id,
+          id: merchandise_id,
           quantity: quantity
         })
       });
