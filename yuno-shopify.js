@@ -1,6 +1,13 @@
 // yuno-secure.js - Enhanced security version with Unified Message Contract support
 'use strict';
 
+if (typeof window.DOMPurify === 'undefined') {
+  const script = document.createElement('script');
+  script.src = 'https://unpkg.com/dompurify@2.4.4/dist/purify.min.js';
+  script.async = false;
+  document.head.appendChild(script);
+}
+
 (() => {
   // Better script detection - look for multiple possible names
   const SCRIPT_NAMES = ['yuno.js', 'yuno-secure.js', 'widget.js', 'yuno-modular.js'];
@@ -877,6 +884,8 @@
       if (cartResponse.ok) {
         const result = await cartResponse.json();
         console.log('🛒 Cart Success:', result);
+        console.log('🛒 Product Title:', result.product_title);
+        console.log('🛒 Checkout URL:', result.checkout_url);
         
         // Remove loading message
         this._removeLastBotMessage();
@@ -884,13 +893,17 @@
         // Show success message based on quantity
         if (quantity > 0) {
           // Added to cart
-          if (result.checkout_url) {
-            this._addBotMessage(`✅ Added "${productTitle}" to your cart!<br><br><a href="${result.checkout_url}" target="_blank" style="background: var(--accent); color: #fff; padding: 10px 16px; border-radius: 8px; text-decoration: none; display: inline-block; font-weight: 600; margin-top: 8px;">🛒 View Cart & Checkout</a>`);
+          const productTitle = result.product_title || productTitle || 'Product';
+          const checkoutUrl = result.checkout_url || result.cart?.checkout_url;
+          
+          if (checkoutUrl) {
+            this._addBotMessage(`✅ Added "${productTitle}" to your cart!<br><br><a href="${checkoutUrl}" target="_blank" style="background: var(--accent); color: #fff; padding: 10px 16px; border-radius: 8px; text-decoration: none; display: inline-block; font-weight: 600; margin-top: 8px;">🛒 View Cart & Checkout</a>`);
           } else {
             this._addBotMessage(`✅ Added "${productTitle}" to your cart!`);
           }
         } else {
           // Removed from cart
+          const productTitle = result.product_title || productTitle || 'Product';
           this._addBotMessage(`✅ Removed "${productTitle}" from your cart!`);
         }
         
@@ -1041,22 +1054,25 @@
 
     // HTML sanitizer for rich content
     _sanitizeHTML(html) {
+      if (window.DOMPurify) {
+        return window.DOMPurify.sanitize(html, {
+          ALLOWED_TAGS: ['b', 'i', 'u', 'a', 'ul', 'li', 'br'],
+          ALLOWED_ATTR: ['href', 'target', 'rel'],
+          RETURN_TRUSTED_TYPE: false
+        });
+      }
+      // Fallback: very basic sanitizer if DOMPurify is not loaded yet
       const allowedTags = ['b', 'i', 'u', 'a', 'ul', 'li', 'br'];
       const div = document.createElement('div');
       div.innerHTML = html;
-      
-      // Remove any script tags or dangerous elements
       const scripts = div.querySelectorAll('script');
       scripts.forEach(script => script.remove());
-      
-      // Only allow specific tags
       const allElements = div.querySelectorAll('*');
       allElements.forEach(el => {
         if (!allowedTags.includes(el.tagName.toLowerCase())) {
           el.replaceWith(document.createTextNode(el.textContent));
         }
       });
-      
       return div.innerHTML;
     }
 
