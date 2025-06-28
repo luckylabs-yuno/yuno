@@ -860,15 +860,14 @@
       }
       
       // Call our cart endpoint (uses same MCP service as product search)
-      const currentDomain = window.location.hostname;
-      const cartResponse = await fetch(`https://bombayshavingcompany.com/cart/add`, {
+      const cartResponse = await fetch(`${CONFIG.apiEndpoint}/shopify/cart/add`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          id: merchandise_id,
+          merchandise_id: merchandise_id,
           quantity: quantity
         })
       });
@@ -1011,8 +1010,12 @@
         
         // Add product carousel if present
         if (messageData.product_carousel && messageData.product_carousel.length > 0) {
+          console.log('🔍 Adding product carousel to message:', messageData.product_carousel);
           const carousel = this._createProductCarousel(messageData.product_carousel);
           msg.appendChild(carousel);
+          console.log('🔍 Product carousel added to message');
+        } else {
+          console.log('🔍 No product carousel in message data');
         }
         
         this._history.push({ role: 'assistant', content: messageData.content });
@@ -1059,10 +1062,15 @@
 
     // Update the _createProductCarousel method
     _createProductCarousel(products) {
+      console.log('🔍 Creating product carousel with:', products);
+      console.log('🔍 Product count:', products.length);
+      
       const carousel = document.createElement('div');
       carousel.className = 'product-carousel';
       
-      products.forEach(product => {
+      products.forEach((product, index) => {
+        console.log(`🔍 Processing product ${index + 1}:`, product);
+        
         const card = document.createElement('div');
         card.className = 'product-card';
         
@@ -1121,6 +1129,7 @@
         carousel.appendChild(card);
       });
       
+      console.log('🔍 Product carousel created with', carousel.children.length, 'cards');
       return carousel;
     }
 
@@ -1311,6 +1320,14 @@
         } else {
           const data = await response.json();
           
+          // Add debugging for response data
+          console.log('🔍 Yuno Response Data:', data);
+          console.log('🔍 Has content:', !!data.content);
+          console.log('🔍 Has product_carousel:', !!data.product_carousel);
+          console.log('🔍 Product count:', data.product_carousel ? data.product_carousel.length : 0);
+          if (data.product_carousel && data.product_carousel.length > 0) {
+            console.log('🔍 First product:', data.product_carousel[0]);
+          }
 
           if (data.content || data.product_carousel || data.quick_replies) {
             this._addBotMessage(null, data);
